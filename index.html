@@ -1572,7 +1572,10 @@ function shareGeotagPhoto(){
     // title/text is what was triggering an "Open with" resolver instead of
     // the proper multi-app share sheet on some Android WebViews. A minimal
     // files-only call is the most broadly compatible per the Web Share spec.
-    var canShareFiles = navigator.canShare && navigator.canShare({files:[file]});
+    // Try the phone's own share sheet first. Some app wrappers don't provide
+    // canShare() even though share() works, so only rule it out if canShare
+    // exists AND says no.
+    var canShareFiles = !navigator.canShare || navigator.canShare({files:[file]});
     if(navigator.share && canShareFiles){
       navigator.share({files:[file]}).then(function(){
         showToast('Choose Messenger or another app');

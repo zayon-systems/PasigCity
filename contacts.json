@@ -1,0 +1,98 @@
+{
+  "_readme": "Official Pasig hotline list. Edit numbers here and push to GitHub — every installed app picks it up the next time it opens online. No APK rebuild needed. Update lastVerified every time you confirm the numbers by phone. Numbers are in calling order. Add ,LOCAL to dial an extension (e.g. 0286430000,1831).",
+  "lastVerified": "2026-09-26",
+  "smsTarget": {
+    "label": "Pasig Ka-TXT",
+    "number": "09088993333",
+    "display": "0908-899-3333"
+  },
+  "fallback": [
+    [
+      "Pasig Command Center · (02) 8643-0000",
+      "0286430000"
+    ],
+    [
+      "Emergency Mobile Backup · 0962-252-1094",
+      "09622521094"
+    ],
+    [
+      "National Emergency · 911",
+      "911"
+    ]
+  ],
+  "contacts": {
+    "bfp": {
+      "numbers": [
+        [
+          "BFP Pasig · (02) 8641-2815",
+          "0286412815"
+        ],
+        [
+          "BFP Pasig mobile · 0932-779-8621",
+          "09327798621"
+        ]
+      ]
+    },
+    "pnp": {
+      "numbers": [
+        [
+          "PNP Pasig · (02) 8477-7953",
+          "0284777953"
+        ]
+      ]
+    },
+    "rescue": {
+      "numbers": [
+        [
+          "Command Center · (02) 8643-0000",
+          "0286430000"
+        ]
+      ]
+    },
+    "drrmo": {
+      "numbers": [
+        [
+          "DRRMO · (02) 8643-0000 loc. 1831",
+          "0286430000,1831"
+        ]
+      ]
+    },
+    "eoc": {
+      "numbers": [
+        [
+          "Command Center · (02) 8643-0000",
+          "0286430000"
+        ],
+        [
+          "City Hall Trunkline · (02) 8643-1111",
+          "0286431111"
+        ]
+      ]
+    },
+    "backup": {
+      "numbers": [
+        [
+          "Emergency Mobile Backup · 0962-252-1094",
+          "09622521094"
+        ]
+      ]
+    },
+    "tpmo": {
+      "numbers": [
+        [
+          "TPMO · (02) 8641-1907",
+          "0286411907"
+        ]
+      ]
+    },
+    "cityhall": {
+      "numbers": [
+        [
+          "City Hall Trunkline · (02) 8643-1111",
+          "0286431111"
+        ]
+      ]
+    }
+  },
+  "otherLines": []
+}

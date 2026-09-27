@@ -1,5 +1,5 @@
 {
-  "_readme": "Official Pasig hotline list. Edit numbers here and push to GitHub — every installed app picks it up the next time it opens online. No APK rebuild needed. Update lastVerified every time you confirm the numbers by phone. Numbers are in calling order. Add ,LOCAL to dial an extension (e.g. 0286430000,1831).",
+  "_readme": "Official Pasig hotline list. Edit numbers here and push to GitHub — every installed app picks it up the next time it opens online. No APK rebuild needed. Update lastVerified every time you confirm the numbers by phone. Numbers are in calling order. Add ,LOCAL to dial an extension (e.g. 0286430000,1831). Barangay numbers are under 'barangays' (first number is dialed first).",
   "lastVerified": "2026-09-26",
   "smsTarget": {
     "label": "Pasig Ka-TXT",
@@ -94,5 +94,267 @@
       ]
     }
   },
-  "otherLines": []
+  "otherLines": [],
+  "barangays": {
+    "Bagong Ilog": [
+      [
+        "Brgy. Bagong Ilog · 0936-180-8499",
+        "09361808499"
+      ],
+      [
+        "Brgy. Bagong Ilog · 0912-815-4041",
+        "09128154041"
+      ],
+      [
+        "Brgy. Bagong Ilog · 0915-901-9134",
+        "09159019134"
+      ]
+    ],
+    "Bagong Katipunan": [
+      [
+        "Brgy. Bagong Katipunan · (02) 8477-4262",
+        "0284774262"
+      ]
+    ],
+    "Bambang": [
+      [
+        "Brgy. Bambang · (02) 7003-2600",
+        "0270032600"
+      ]
+    ],
+    "Buting": [
+      [
+        "Brgy. Buting · 0916-664-7744",
+        "09166647744"
+      ],
+      [
+        "Brgy. Buting · 0968-214-1115",
+        "09682141115"
+      ]
+    ],
+    "Caniogan": [
+      [
+        "Brgy. Caniogan · 0967-039-3182",
+        "09670393182"
+      ],
+      [
+        "Brgy. Caniogan · 0908-643-6720",
+        "09086436720"
+      ]
+    ],
+    "Dela Paz": [
+      [
+        "Brgy. Dela Paz · 0999-998-8844",
+        "09999988844"
+      ]
+    ],
+    "Kalawaan": [
+      [
+        "Brgy. Kalawaan · 0966-007-0440",
+        "09660070440"
+      ]
+    ],
+    "Kapasigan": [
+      [
+        "Brgy. Kapasigan · (02) 8725-4023",
+        "0287254023"
+      ]
+    ],
+    "Kapitolyo": [
+      [
+        "Brgy. Kapitolyo · 0967-098-4620",
+        "09670984620"
+      ],
+      [
+        "Brgy. Kapitolyo · (02) 8632-7598",
+        "0286327598"
+      ]
+    ],
+    "Malinao": [
+      [
+        "Brgy. Malinao · (02) 8641-6672",
+        "0286416672"
+      ],
+      [
+        "Brgy. Malinao · (02) 8632-7605",
+        "0286327605"
+      ]
+    ],
+    "Manggahan": [
+      [
+        "Brgy. Manggahan · 0917-172-9744",
+        "09171729744"
+      ],
+      [
+        "Brgy. Manggahan · 0908-865-3031",
+        "09088653031"
+      ]
+    ],
+    "Maybunga": [
+      [
+        "Brgy. Maybunga · 0931-091-6554",
+        "09310916554"
+      ],
+      [
+        "Brgy. Maybunga · (02) 8642-8645",
+        "0286428645"
+      ]
+    ],
+    "Oranbo": [
+      [
+        "Brgy. Oranbo · 0915-406-2290",
+        "09154062290"
+      ],
+      [
+        "Brgy. Oranbo · (02) 8631-0254",
+        "0286310254"
+      ]
+    ],
+    "Palatiw": [
+      [
+        "Brgy. Palatiw · (02) 8373-9234",
+        "0283739234"
+      ],
+      [
+        "Brgy. Palatiw · (02) 8374-0082",
+        "0283740082"
+      ]
+    ],
+    "Pinagbuhatan": [
+      [
+        "Brgy. Pinagbuhatan · (02) 8880-4609",
+        "0288804609"
+      ],
+      [
+        "Brgy. Pinagbuhatan · 0923-857-4110",
+        "09238574110"
+      ],
+      [
+        "Brgy. Pinagbuhatan · 0915-266-1400",
+        "09152661400"
+      ]
+    ],
+    "Pineda": [
+      [
+        "Brgy. Pineda · 0993-789-0331",
+        "09937890331"
+      ]
+    ],
+    "Rosario": [
+      [
+        "Brgy. Rosario · (02) 8640-7705",
+        "0286407705"
+      ],
+      [
+        "Brgy. Rosario · (02) 7956-5695",
+        "0279565695"
+      ]
+    ],
+    "Sagad": [
+      [
+        "Brgy. Sagad · (02) 8628-0227",
+        "0286280227"
+      ]
+    ],
+    "San Antonio": [
+      [
+        "Brgy. San Antonio · (02) 8570-6737",
+        "0285706737"
+      ],
+      [
+        "Brgy. San Antonio · 0918-625-4428",
+        "09186254428"
+      ],
+      [
+        "Brgy. San Antonio · (02) 8635-9424",
+        "0286359424"
+      ],
+      [
+        "Brgy. San Antonio · (02) 8631-0099",
+        "0286310099"
+      ]
+    ],
+    "San Joaquin": [
+      [
+        "Brgy. San Joaquin · 0920-306-5643",
+        "09203065643"
+      ]
+    ],
+    "San Jose": [
+      [
+        "Brgy. San Jose · 0967-059-8674",
+        "09670598674"
+      ]
+    ],
+    "San Miguel": [
+      [
+        "Brgy. San Miguel · (02) 8260-7230",
+        "0282607230"
+      ],
+      [
+        "Brgy. San Miguel · 0956-928-2660",
+        "09569282660"
+      ]
+    ],
+    "San Nicolas": [
+      [
+        "Brgy. San Nicolas · 0906-274-8238",
+        "09062748238"
+      ],
+      [
+        "Brgy. San Nicolas · (02) 7239-7463",
+        "0272397463"
+      ]
+    ],
+    "Santolan": [
+      [
+        "Brgy. Santolan · 0917-311-9756",
+        "09173119756"
+      ],
+      [
+        "Brgy. Santolan · 0966-064-1882",
+        "09660641882"
+      ]
+    ],
+    "Santa Cruz": [
+      [
+        "Brgy. Santa Cruz · (02) 7343-0611",
+        "0273430611"
+      ]
+    ],
+    "Santa Lucia": [
+      [
+        "Brgy. Santa Lucia · 0962-496-4778",
+        "09624964778"
+      ]
+    ],
+    "Santa Rosa": [
+      [
+        "Brgy. Santa Rosa · (02) 7256-0509",
+        "0272560509"
+      ],
+      [
+        "Brgy. Santa Rosa · 0961-762-5452",
+        "09617625452"
+      ]
+    ],
+    "Santo Tomas": [
+      [
+        "Brgy. Santo Tomas · (02) 7148-9575",
+        "0271489575"
+      ]
+    ],
+    "Sumilang": [
+      [
+        "Brgy. Sumilang · 0926-728-3919",
+        "09267283919"
+      ]
+    ],
+    "Ugong": [
+      [
+        "Brgy. Ugong · 0917-816-4987",
+        "09178164987"
+      ]
+    ]
+  }
 }

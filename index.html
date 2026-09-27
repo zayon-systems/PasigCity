@@ -1373,13 +1373,19 @@ function resetBarangay(){
 }
 function onProfileBarangayChange(el){
   var v=el.value;if(!v)return;
-  if(!localStorage.getItem('brgy-name')||!isBarangayCustom()){persistSet('brgy-name',v);}
-  var numEl=document.getElementById('p-brgy-num');
+  var changed=(getBarangayName()!==v);
+  // Moving to a different barangay: the old barangay's numbers no longer apply,
+  // so switch to the new barangay's official numbers (resident can edit later).
+  if(changed||!isBarangayCustom()){
+    persistSet('brgy-name',v);
+    if(changed){persistSet('brgy-num','');persistSet('brgy-extras','[]');barangayNum='';}
+  }
   var off=officialBarangayNumbers(v);
-  if(numEl&&off.length&&(!numEl.value||numEl.dataset.auto==='1')){numEl.value=numDisplay(off[0]);numEl.dataset.auto='1';}
-  var other=document.getElementById(el.id==='p-barangay'?'p-brgy-name':'p-barangay');
-  if(other&&!other.value)other.value=v;
+  var numEl=document.getElementById('p-brgy-num');
+  if(numEl){numEl.value=off.length?numDisplay(off[0]):'';persistSet('p-brgy-num',numEl.value);}
+  ['p-barangay','p-brgy-name'].forEach(function(id){var x=document.getElementById(id);if(x){x.value=v;persistSet(id,v);}});
   renderContacts();
+  showToast('✓ Brgy. '+v+' numbers loaded');
 }
 function renderBarangayExtras(){var w=document.getElementById('barangay-extra-list');if(w)w.innerHTML='';}
 function loadBarangayExtras(){renderBarangayExtras();}

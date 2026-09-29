@@ -1,11 +1,11 @@
 # Pasig Emergency Ready (PER Pasig)
 
-One-tap access to all emergency contacts in Pasig City.
+Every Pasig emergency hotline in one app, ready to dial.
 
 **Prepared. Educated. Ready.**
 
 ## Features
-- One-tap hotlines by emergency type: Fire, Police, Ambulance/Rescue, DRRMO, Command Center, Barangay, 911
+- Hotlines by emergency type (tap, then press Call): Fire, Police, Ambulance/Rescue, DRRMO, Command Center, Barangay, 911
 - Backup call order: if a line is busy, the next number is offered instantly
 - Text for Help: SMS to Pasig Ka-TXT with GPS location (no internet needed)
 - Official numbers update from `contacts.json` without rebuilding the app

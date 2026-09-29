@@ -1,7 +1,7 @@
 {
   "name": "Pasig Emergency Ready",
   "short_name": "PER Pasig",
-  "description": "One-tap access to all emergency contacts in Pasig City. Prepared. Educated. Ready.",
+  "description": "Every Pasig emergency hotline in one app, ready to dial. Prepared. Educated. Ready.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",

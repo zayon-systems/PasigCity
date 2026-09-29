@@ -236,11 +236,11 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-dot{width:10px;height:10px;border-radius:50%;background:#777;flex-shrink:0}
 .gc-dot.good{background:#2ecc40}.gc-dot.fair{background:#ff9f1a}.gc-dot.poor,.gc-dot.off{background:#e53935}
 .gc-dot.searching{background:#FFD700;animation:pulse 1.2s infinite}
-.gc-viewfinder{position:relative;background:#000;border-radius:10px;overflow:hidden;min-height:240px;max-height:56vh;display:flex;align-items:center;justify-content:center}
-.gc-viewfinder video{width:100%;max-height:56vh;object-fit:contain;display:block}
+.gc-viewfinder{position:relative;background:#000;border-radius:10px;overflow:hidden;width:100%;aspect-ratio:4/3;flex-shrink:0;display:flex;align-items:center;justify-content:center}
+.gc-viewfinder video{width:100%;height:100%;object-fit:cover;display:block}
 .gc-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .15s}
 .gc-flash.on{opacity:.8;transition:none}
-.gc-live{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);border-left:4px solid #0B3D91;color:#fff;padding:6px 8px;font-size:10px;line-height:1.35;pointer-events:none}
+.gc-live{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.55);border-left:4px solid #0B3D91;color:#fff;padding:4px 8px;font-size:9px;line-height:1.3;pointer-events:none}
 .gc-live b{color:#FFD700;font-size:11px}
 .gc-live small{color:#bbb;font-size:9px}
 .gc-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;color:#eee;font-size:12px;background:#111}
@@ -265,9 +265,6 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-preview img{flex:1;min-height:0;width:100%;object-fit:contain}
 .gc-preview .gc-pv-name{color:#bbb;font-size:10px;text-align:center;word-break:break-all}
 .gc-preview .btn-outline{background:transparent;color:#fff;border-color:#fff}
-.gc-savetest{background:#222;border:1px dashed #FFD700;border-radius:8px;padding:8px;color:#eee;font-size:10px;line-height:1.4;display:flex;flex-direction:column;gap:6px}
-.gc-savetest-row{display:flex;gap:6px}
-.gc-savetest-row button{flex:1;background:#FFD700;color:#000;border:none;border-radius:6px;padding:8px 0;font-weight:900;font-size:13px;cursor:pointer}
 .gc-thumb.pending{position:relative}
 .gc-thumb.pending img{position:absolute;inset:0}
 .gc-spin{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid rgba(255,255,255,.35);border-top-color:#FFD700;border-radius:50%;animation:gcspin .8s linear infinite}
@@ -279,12 +276,15 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-help-card ol{padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.4}
 .gc-help-tip{font-size:11px;color:#666}
 .gc-help-diag{font-size:9px;color:#aaa;text-align:center}
+.gc-side{width:64px}
+.gc-center{justify-content:center}
+.gc-share-btn{width:80%;align-self:center;font-size:15px;padding:14px}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v2.0.3</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span>PER Pasig v2.1.1</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -643,22 +643,16 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <div class="gc-fallback" id="gc-fallback" style="display:none">
         <p id="gc-fallback-msg">Opening camera…</p>
         <button class="btn-primary" onclick="gcStartCamera()">↻ TRY AGAIN</button>
-        <p style="font-size:10px;color:#aaa">or tap 📱 Phone cam below</p>
       </div>
     </div>
     <div class="gc-controls">
-      <button class="gc-alt" onclick="document.getElementById('gc-file').click()">📱<span>Phone cam</span></button>
+      <div class="gc-side"></div>
       <button class="gc-shutter" id="gc-shutter" onclick="gcShutter()" aria-label="Take photo"></button>
       <div class="gc-count"><b id="gc-count">0</b><span>photos</span></div>
     </div>
-    <input type="file" accept="image/*" capture="environment" id="gc-file" style="display:none" onchange="gcFromFile(event)">
     <div class="gc-tray" id="gc-tray"></div>
-    <label class="gc-toggle"><input type="checkbox" id="gc-autosave" onchange="gcSetAutoSave(this.checked)"> Auto-save each photo to phone</label>
-    <label class="gc-toggle"><input type="checkbox" id="gc-hd" onchange="gcSetHD(this.checked)"> HD photos (sharper, but slower)</label>
-    <div class="action-row">
-      <button class="btn-primary" id="gc-save-all" onclick="gcSaveAll()">💾 SAVE ALL</button>
-      <button class="btn-outline" id="gc-share-all" onclick="gcShareAll()">📤 SHARE ALL</button>
-    </div>
+    <label class="gc-toggle gc-center"><input type="checkbox" id="gc-hd" onchange="gcSetHD(this.checked)"> HD photos (sharper, but slower)</label>
+    <button class="btn-primary gc-share-btn" id="gc-share-all" onclick="gcShareAll()">📤 SHARE ALL</button>
     <button class="gc-clear" id="gc-clear" onclick="gcClearAll()">Clear photos from this session</button>
   </div>
   <div class="gc-help" id="gc-help" onclick="if(event.target===this)gcHideShareHelp()">
@@ -678,14 +672,6 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
   <div class="gc-preview" id="gc-preview">
     <img id="gc-pv-img" alt="Photo preview">
     <div class="gc-pv-name" id="gc-pv-name"></div>
-    <div class="gc-savetest">
-      <div><b>🔧 SAVE TEST (temporary)</b> — tap each one, then check Gallery and My Files → Downloads. Tell me which puts the <b>stamped</b> photo on your phone.</div>
-      <div class="gc-savetest-row">
-        <button onclick="gcSaveTest('blob')">A</button><button onclick="gcSaveTest('data')">B</button>
-        <button onclick="gcSaveTest('mimg')">C</button><button onclick="gcSaveTest('mfile')">D</button>
-      </div>
-      <div>Now using: <b id="gc-savetest-cur"></b> · <span id="gc-savetest-bridge"></span></div>
-    </div>
     <div class="action-row">
       <button class="btn-primary" onclick="gcPreviewAction('save')">💾 SAVE</button>
       <button class="btn-outline" onclick="gcPreviewAction('share')">📤 SHARE</button>
@@ -887,7 +873,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <div class="ls-note">Enable Android's built-in Emergency Information so first responders can access your details from the lock screen.</div>
     </div>
     <div class="about-card">
-      <h3>App Features v2.0</h3>
+      <h3>App Features v2.1</h3>
       <div class="features-list">
         <div class="feature-item"><span class="feature-check">✓</span><span>Pasig emergency hotlines by emergency type — tap, then press Call</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Backup call order — next number offered instantly if a line is busy</span></div>
@@ -896,7 +882,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
         <div class="feature-item"><span class="feature-check">✓</span><span>"In Case of Emergency" card for first responders</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Personal emergency profile with photo</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Barangay hotline for all 30 Pasig barangays, with extra numbers</span></div>
-        <div class="feature-item"><span class="feature-check">✓</span><span>Geotag camera: take multiple photos, each stamped with GPS, date/time & your name — auto-saved to your phone</span></div>
+        <div class="feature-item"><span class="feature-check">✓</span><span>Geotag camera: take multiple photos, each stamped with GPS, date/time & your name — saved to your phone and shared in one tap</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Family Emergency Plan builder</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Nearest government & private hospital locator</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Official alerts from OCD, PAGASA, NDRRMC & Pasig City DRRMO</span></div>
@@ -1215,7 +1201,7 @@ function fmtDate(iso){
 function verifiedText(){return 'Official numbers last verified: '+fmtDate(getOfficial().lastVerified||OFFICIAL_DEFAULT.lastVerified);}
 function refreshOfficialContacts(){
   if(!window.fetch)return;
-  fetch('contacts.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(o){
+  fetch((window.PER_REMOTE_BASE||'')+'contacts.json?t='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.json():null;}).then(function(o){
     if(!o||!o.contacts||!o.lastVerified)return;
     persistSet('official-contacts',JSON.stringify(o));
     renderContacts();renderOtherLines();
@@ -1663,6 +1649,21 @@ function setManualLocation(){
 // Photographer: name + number from the in-app Profile (localStorage p-name / p-own-num).
 var GC_APP_NAME='PER Pasig';      // printed in the stamp footer + EXIF Software
 var GC_FILE_PREFIX='PERPasig';    // file name: PERPasig_20260929_112105_01.jpg
+var GC_ALBUM='PER Pasig';         // Gallery album when running as the installed Android app
+
+// ---------- Native Android app (Capacitor) ----------
+// In the installed app, photos save straight to Gallery → PER Pasig, and SHARE ALL opens the
+// Android share sheet. In a normal browser the web fallbacks below are used instead.
+function gcNative(){
+  try{return !!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());}catch(e){return false;}
+}
+var gcMediaPlugin=null;
+function gcMedia(){
+  if(!gcMediaPlugin&&gcNative()){
+    gcMediaPlugin=(Capacitor.Plugins&&Capacitor.Plugins.PerMedia)||(Capacitor.registerPlugin?Capacitor.registerPlugin('PerMedia'):null);
+  }
+  return gcMediaPlugin;
+}
 var GC_MAX_PHOTOS=30;             // per session, keeps memory safe on budget phones
 var GC_STALE_MS=30000;            // GPS fix older than this is labelled with its age
 var gc={stream:null,imageCapture:null,watchId:null,fix:null,photos:[],queue:Promise.resolve(),
@@ -1687,8 +1688,6 @@ function gcOpen(){
   gc.open=true;
   var p=gcProfile();
   document.getElementById('gc-profile-warn').style.display=(p.name&&p.contact)?'none':'block';
-  var auto=true;try{auto=localStorage.getItem('gc-autosave')!=='0';}catch(e){}
-  document.getElementById('gc-autosave').checked=auto;
   var hdEl=document.getElementById('gc-hd');if(hdEl)hdEl.checked=gcHD();
   gcStartCamera();gcStartGPS();
   clearInterval(gc.timer);gc.timer=setInterval(gcRenderLive,1000);gcRenderLive();
@@ -1718,7 +1717,7 @@ function gcShowFallback(msg){
 function gcStartCamera(){
   if(gc.stream)return;
   if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
-    gcShowFallback('Live camera is not available here. Use 📱 Phone cam below.');return;
+    gcShowFallback('Live camera is not available on this device.');return;
   }
   document.getElementById('gc-fallback').style.display='none';
   var hd=gcHD();
@@ -1732,7 +1731,7 @@ function gcStartCamera(){
   })
   .catch(function(err){
     gcShowFallback(err&&err.name==='NotAllowedError'
-      ?'Camera blocked. Phone Settings → Apps → PER Pasig → Permissions → Camera → Allow, then tap TRY AGAIN. Or use 📱 Phone cam.'
+      ?'Camera blocked. Phone Settings → Apps → PER Pasig → Permissions → Camera → Allow, then tap TRY AGAIN.'
       :'Could not open the live camera ('+(err&&err.name||'error')+').');
   });
 }
@@ -1850,7 +1849,7 @@ function gcTakeHiRes(){
 function gcShutter(){
   if(gc.photos.length+gc.busy>=GC_MAX_PHOTOS){showToast('Limit '+GC_MAX_PHOTOS+' photos — save & clear first','#D44000');return;}
   var v=document.getElementById('gc-video');
-  if(!gc.stream||!v.videoWidth){showToast('Camera not ready — use 📱 Phone cam','#D44000');return;}
+  if(!gc.stream||!v.videoWidth){showToast('Camera not ready — wait a second and try again','#D44000');return;}
   var meta=gcSnapshotMeta(new Date());        // time + GPS locked at the tap
   meta.portrait=v.videoHeight>v.videoWidth;
   gcFlash();
@@ -1942,7 +1941,7 @@ function gcStampAndStore(src,meta){
       var photo={id:'p'+meta.seq+'_'+d.getTime(),seq:meta.seq,blob:blob,url:URL.createObjectURL(blob),thumb:thumb,name:name,saved:false,
         ms:Math.round(performance.now()-(meta.t0||performance.now())),px:w+'×'+h};
       gc.photos.push(photo);
-      if(gcAutoSaveOn())gcSavePhoto(photo,true);
+      gcSavePhoto(photo,true); // every photo is saved to the phone automatically
     });
 }
 
@@ -2023,7 +2022,7 @@ function gcRenderTray(){
   t.innerHTML=html;t.scrollLeft=t.scrollWidth;
   document.getElementById('gc-count').textContent=gc.photos.length+gc.busy;
   var unsaved=gc.photos.filter(function(p){return !p.saved;}).length;
-  document.getElementById('gc-save-all').textContent=gc.photos.length&&!unsaved?'✓ ALL SAVED':'💾 SAVE ALL'+(unsaved?' ('+unsaved+')':'');
+  var sb=document.getElementById('gc-share-all');if(sb)sb.textContent='📤 SHARE ALL'+(gc.photos.length?' ('+gc.photos.length+')':'');
 }
 function gcFind(id){for(var i=0;i<gc.photos.length;i++)if(gc.photos[i].id===id)return gc.photos[i];return null;}
 function gcOpenPreview(id){
@@ -2031,7 +2030,6 @@ function gcOpenPreview(id){
   document.getElementById('gc-pv-img').src=p.url;
   document.getElementById('gc-pv-name').textContent=p.name+'  ·  '+p.px+'  ·  '+(p.blob.size/1048576).toFixed(1)+' MB  ·  ready in '+(p.ms/1000).toFixed(1)+' s'+(p.saved?'  ·  saved':'  ·  not saved yet');
   document.getElementById('gc-preview').classList.add('show');
-  gcRenderSaveTest();
 }
 function gcClosePreview(){document.getElementById('gc-preview').classList.remove('show');gc.previewId=null;}
 function gcPreviewAction(a){
@@ -2057,10 +2055,8 @@ function gcClearAll(){
 }
 
 // ---------- Save + share ----------
-function gcAutoSaveOn(){var el=document.getElementById('gc-autosave');return !!(el&&el.checked);}
-function gcSetAutoSave(on){try{localStorage.setItem('gc-autosave',on?'1':'0');}catch(e){}}
 // Save methods. Median's Android downloader may not accept blob: URLs, so the
-// working method is chosen with the SAVE TEST panel in the photo preview and remembered.
+// default is the blob link (confirmed working in the Median build with System downloads folder).
 //  blob  = <a download> with blob: URL (works in Chrome)
 //  data  = <a download> with data: URL
 //  mimg  = Median bridge median.share.downloadImage (saves to Gallery)
@@ -2077,6 +2073,11 @@ function gcAnchor(href,name){
   document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},1500);
 }
 function gcSaveVia(method,p){
+  if(gcMedia()){
+    return gcBlobToDataURL(p.blob).then(function(d){
+      return gcMedia().saveImage({base64:d,filename:p.name,album:GC_ALBUM});
+    }).then(function(r){p.nativeUri=r&&r.uri;});
+  }
   if(method==='blob'){gcAnchor(p.url,p.name);return Promise.resolve();}
   return gcBlobToDataURL(p.blob).then(function(d){
     if(method==='data'){gcAnchor(d,p.name);return;}
@@ -2089,23 +2090,10 @@ function gcSaveVia(method,p){
 function gcSavePhoto(p,quiet){
   return gcSaveVia(gcSaveMethod(),p).then(function(){
     p.saved=true;gcRenderTray();
-    if(!quiet)showToast('💾 Sent to phone: '+p.name);
+    if(!quiet)showToast(gcMedia()?'💾 Saved to Gallery → '+GC_ALBUM:'💾 Sent to phone: '+p.name);
   }).catch(function(e){
     showToast('⚠️ Save failed ('+(e&&e.message||'error')+') — use SHARE','#D44000');
   });
-}
-var GC_METHOD_LABEL={blob:'A · Blob link',data:'B · Data link',mimg:'C · Median → Gallery',mfile:'D · Median → Downloads'};
-function gcRenderSaveTest(){
-  var el=document.getElementById('gc-savetest-cur');if(el)el.textContent=GC_METHOD_LABEL[gcSaveMethod()]||gcSaveMethod();
-  var br=document.getElementById('gc-savetest-bridge');if(br)br.textContent=(window.median&&window.median.share)?'Median bridge: found ✓':'Median bridge: NOT found';
-}
-function gcSaveTest(method){
-  var p=gcFind(gc.previewId);if(!p)return;
-  try{localStorage.setItem('gc-save-method',method);}catch(e){}
-  gcRenderSaveTest();
-  gcSaveVia(method,p).then(function(){
-    showToast('Tried '+GC_METHOD_LABEL[method]+' — check Gallery & Downloads');
-  }).catch(function(e){showToast(GC_METHOD_LABEL[method]+' failed: '+e.message,'#D44000');});
 }
 function gcSaveAll(){
   var list=gc.photos.filter(function(p){return !p.saved;});
@@ -2116,6 +2104,16 @@ function gcSaveAll(){
 }
 function gcShareAll(){if(!gc.photos.length){showToast('No photos yet','#D44000');return;}gcShareFiles(gc.photos);}
 function gcShareFiles(list){
+  if(gcMedia()){
+    showToast('Opening share…');
+    Promise.all(list.map(function(p){
+      if(p.nativeUri)return {uri:p.nativeUri,filename:p.name};
+      return gcBlobToDataURL(p.blob).then(function(d){return {base64:d,filename:p.name};});
+    })).then(function(items){
+      return gcMedia().shareImages({files:items,title:'Share '+items.length+' photo'+(items.length>1?'s':'')});
+    }).catch(function(e){showToast('⚠️ Share failed: '+(e&&e.message||'error'),'#D44000');});
+    return;
+  }
   var files=list.map(function(p){return new File([p.blob],p.name,{type:'image/jpeg'});});
   var hasShare=!!navigator.share, hasCan=!!navigator.canShare;
   var canFiles=hasCan?navigator.canShare({files:files}):hasShare;
@@ -2130,7 +2128,7 @@ function gcShareFiles(list){
 function gcShowShareHelp(n,hasShare,hasCan){
   var saved=gc.photos.filter(function(p){return p.saved;}).length;
   document.getElementById('gc-help-count').textContent=n>1?n+' photos':'this photo';
-  document.getElementById('gc-help-saved').textContent=saved===gc.photos.length?'✓ All '+saved+' photos are already saved on your phone.':'⚠️ '+(gc.photos.length-saved)+' photo(s) not saved yet — tap SAVE ALL first.';
+  document.getElementById('gc-help-saved').textContent=saved===gc.photos.length?'✓ All '+saved+' photos are already saved on your phone.':'⚠️ '+(gc.photos.length-saved)+' photo(s) not saved yet — tap the photo, then SAVE.';
   document.getElementById('gc-help-diag').textContent='share:'+(hasShare?'yes':'no')+' · files:'+(hasCan?'check':'n/a');
   document.getElementById('gc-help').classList.add('show');
 }
@@ -2443,7 +2441,8 @@ window.addEventListener('load',function(){
     initGPS();
     refreshOfficialContacts();
   });
-  if('serviceWorker' in navigator){
+  var isNativeApp=!!(window.Capacitor&&Capacitor.isNativePlatform&&Capacitor.isNativePlatform());
+  if('serviceWorker' in navigator && !isNativeApp){
     navigator.serviceWorker.register('service-worker.js').catch(function(){});
   }
 });

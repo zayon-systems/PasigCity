@@ -268,12 +268,16 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-savetest{background:#222;border:1px dashed #FFD700;border-radius:8px;padding:8px;color:#eee;font-size:10px;line-height:1.4;display:flex;flex-direction:column;gap:6px}
 .gc-savetest-row{display:flex;gap:6px}
 .gc-savetest-row button{flex:1;background:#FFD700;color:#000;border:none;border-radius:6px;padding:8px 0;font-weight:900;font-size:13px;cursor:pointer}
+.gc-thumb.pending{position:relative}
+.gc-thumb.pending img{position:absolute;inset:0}
+.gc-spin{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid rgba(255,255,255,.35);border-top-color:#FFD700;border-radius:50%;animation:gcspin .8s linear infinite}
+@keyframes gcspin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v2.0.1</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span>PER Pasig v2.0.2</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -643,6 +647,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
     <input type="file" accept="image/*" capture="environment" id="gc-file" style="display:none" onchange="gcFromFile(event)">
     <div class="gc-tray" id="gc-tray"></div>
     <label class="gc-toggle"><input type="checkbox" id="gc-autosave" onchange="gcSetAutoSave(this.checked)"> Auto-save each photo to phone</label>
+    <label class="gc-toggle"><input type="checkbox" id="gc-hd" onchange="gcSetHD(this.checked)"> HD photos (sharper, but slower)</label>
     <div class="action-row">
       <button class="btn-primary" id="gc-save-all" onclick="gcSaveAll()">💾 SAVE ALL</button>
       <button class="btn-outline" id="gc-share-all" onclick="gcShareAll()">📤 SHARE ALL</button>
@@ -1640,7 +1645,7 @@ var GC_FILE_PREFIX='PERPasig';    // file name: PERPasig_20260929_112105_01.jpg
 var GC_MAX_PHOTOS=30;             // per session, keeps memory safe on budget phones
 var GC_STALE_MS=30000;            // GPS fix older than this is labelled with its age
 var gc={stream:null,imageCapture:null,watchId:null,fix:null,photos:[],queue:Promise.resolve(),
-        seq:0,busy:0,timer:null,open:false,previewId:null,clearArmed:false};
+        seq:0,busy:0,pending:[],timer:null,open:false,previewId:null,clearArmed:false};
 
 var GC_DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
 var GC_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
@@ -1663,6 +1668,7 @@ function gcOpen(){
   document.getElementById('gc-profile-warn').style.display=(p.name&&p.contact)?'none':'block';
   var auto=true;try{auto=localStorage.getItem('gc-autosave')!=='0';}catch(e){}
   document.getElementById('gc-autosave').checked=auto;
+  var hdEl=document.getElementById('gc-hd');if(hdEl)hdEl.checked=gcHD();
   gcStartCamera();gcStartGPS();
   clearInterval(gc.timer);gc.timer=setInterval(gcRenderLive,1000);gcRenderLive();
   gcRenderTray();
@@ -1694,7 +1700,8 @@ function gcStartCamera(){
     gcShowFallback('Live camera is not available here. Use 📱 Phone cam below.');return;
   }
   document.getElementById('gc-fallback').style.display='none';
-  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}})
+  var hd=gcHD();
+  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:hd?3840:1920},height:{ideal:hd?2160:1080}}})
   .then(function(s){
     if(!gc.open||document.hidden){s.getTracks().forEach(function(t){t.stop();});return;}
     gc.stream=s;
@@ -1787,6 +1794,20 @@ function gcSnapshotMetaPreview(){ // same as snapshot but doesn't consume a phot
     place:(document.getElementById('cam-location-desc').value||'').trim(),name:p.name,contact:p.contact};
 }
 
+// ---------- Speed settings ----------
+// Fast mode (default): photo = the live camera frame (~2 MP), instant.
+// HD mode: full-sensor photo via ImageCapture — sharper but 1-3 s per shot on many phones.
+function gcHD(){try{return localStorage.getItem('gc-hd')==='1';}catch(e){return false;}}
+function gcSetHD(on){
+  try{localStorage.setItem('gc-hd',on?'1':'0');}catch(e){}
+  gcStopCamera();gcStartCamera();
+  showToast(on?'HD on — sharper, slower':'Fast mode — quicker photos');
+}
+function gcTinyThumb(src,w,h){ // small JPEG for the tray, so thumbnails never decode full photos
+  var tw=160,th=Math.round(160*h/w),c=document.createElement('canvas');c.width=tw;c.height=th;
+  c.getContext('2d').drawImage(src,0,0,tw,th);return c.toDataURL('image/jpeg',0.7);
+}
+
 // ---------- Capture ----------
 function gcFlash(){
   var f=document.getElementById('gc-flash');f.classList.add('on');
@@ -1812,10 +1833,12 @@ function gcShutter(){
   var meta=gcSnapshotMeta(new Date());        // time + GPS locked at the tap
   meta.portrait=v.videoHeight>v.videoWidth;
   gcFlash();
+  meta.t0=performance.now();
   var frame=gcGrabFrame(v);                    // the moment is never lost, even if hi-res fails
-  var useHiRes=!!gc.imageCapture&&gc.busy===0; // rapid taps use the instant frame so each photo = its own moment
+  meta.thumb=gcTinyThumb(frame,frame.width,frame.height); // shows in the tray immediately
+  var useHiRes=gcHD()&&!!gc.imageCapture&&gc.busy===0; // HD only; rapid taps always use the instant frame
   var src=useHiRes?gcTakeHiRes().catch(function(){return frame;}):Promise.resolve(frame);
-  gc.busy++;gcRenderTray();
+  gc.pending.push(meta);gc.busy++;gcRenderTray();
   gcEnqueue(src,meta);
 }
 function gcFromFile(e){
@@ -1823,15 +1846,16 @@ function gcFromFile(e){
   if(!file)return;
   if(gc.photos.length+gc.busy>=GC_MAX_PHOTOS){showToast('Limit '+GC_MAX_PHOTOS+' photos — save & clear first','#D44000');return;}
   var meta=gcSnapshotMeta(new Date());
+  meta.t0=performance.now();
   var src=createImageBitmap(file,{imageOrientation:'from-image'}).catch(function(){return createImageBitmap(file);});
-  gc.busy++;gcRenderTray();
+  gc.pending.push(meta);gc.busy++;gcRenderTray();
   gcEnqueue(src,meta);
 }
 function gcEnqueue(srcPromise,meta){
   gc.queue=gc.queue.then(function(){return srcPromise;})
     .then(function(src){return gcStampAndStore(src,meta);})
     .catch(function(err){console.error('[gc]',err);showToast('⚠️ Photo #'+meta.seq+' failed — try again','#D44000');})
-    .then(function(){gc.busy--;gcRenderTray();});
+    .then(function(){gc.pending=gc.pending.filter(function(m){return m!==meta;});gc.busy--;gcRenderTray();});
 }
 
 // ---------- Stamp + encode ----------
@@ -1887,13 +1911,15 @@ function gcStampAndStore(src,meta){
   else ctx.drawImage(src,0,0,w,h);
   if(src.close)try{src.close();}catch(e){}
   gcDrawStamp(ctx,w,h,meta);
-  return new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('encode failed'));},'image/jpeg',0.9);})
+  var thumb=gcTinyThumb(c,w,h);
+  return new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('encode failed'));},'image/jpeg',0.85);})
     .then(function(blob){c.width=c.height=0;return gcAddExif(blob,meta).catch(function(){return blob;});})
     .then(function(blob){
       var d=meta.date;
       var name=GC_FILE_PREFIX+'_'+d.getFullYear()+gcPad(d.getMonth()+1)+gcPad(d.getDate())+'_'+
         gcPad(d.getHours())+gcPad(d.getMinutes())+gcPad(d.getSeconds())+'_'+gcPad(meta.seq)+'.jpg';
-      var photo={id:'p'+meta.seq+'_'+d.getTime(),seq:meta.seq,blob:blob,url:URL.createObjectURL(blob),name:name,saved:false};
+      var photo={id:'p'+meta.seq+'_'+d.getTime(),seq:meta.seq,blob:blob,url:URL.createObjectURL(blob),thumb:thumb,name:name,saved:false,
+        ms:Math.round(performance.now()-(meta.t0||performance.now())),px:w+'×'+h};
       gc.photos.push(photo);
       if(gcAutoSaveOn())gcSavePhoto(photo,true);
     });
@@ -1968,9 +1994,11 @@ function gcRenderTray(){
   var t=document.getElementById('gc-tray');if(!t)return;
   var html='';
   gc.photos.forEach(function(p){
-    html+='<div class="gc-thumb" onclick="gcOpenPreview(\''+p.id+'\')"><img src="'+p.url+'" alt=""><span class="n">#'+gcPad(p.seq)+'</span>'+(p.saved?'<span class="s">✓</span>':'')+'</div>';
+    html+='<div class="gc-thumb" onclick="gcOpenPreview(\''+p.id+'\')"><img src="'+p.thumb+'" alt=""><span class="n">#'+gcPad(p.seq)+'</span>'+(p.saved?'<span class="s">✓</span>':'')+'</div>';
   });
-  for(var i=0;i<gc.busy;i++)html+='<div class="gc-thumb pending">…</div>';
+  gc.pending.forEach(function(m){
+    html+='<div class="gc-thumb pending">'+(m.thumb?'<img src="'+m.thumb+'" alt="" style="opacity:.5">':'')+'<span class="n">#'+gcPad(m.seq)+'</span><span class="gc-spin"></span></div>';
+  });
   t.innerHTML=html;t.scrollLeft=t.scrollWidth;
   document.getElementById('gc-count').textContent=gc.photos.length+gc.busy;
   var unsaved=gc.photos.filter(function(p){return !p.saved;}).length;
@@ -1980,7 +2008,7 @@ function gcFind(id){for(var i=0;i<gc.photos.length;i++)if(gc.photos[i].id===id)r
 function gcOpenPreview(id){
   var p=gcFind(id);if(!p)return;gc.previewId=id;
   document.getElementById('gc-pv-img').src=p.url;
-  document.getElementById('gc-pv-name').textContent=p.name+(p.saved?'  ·  saved':'  ·  not saved yet');
+  document.getElementById('gc-pv-name').textContent=p.name+'  ·  '+p.px+'  ·  '+(p.blob.size/1048576).toFixed(1)+' MB  ·  ready in '+(p.ms/1000).toFixed(1)+' s'+(p.saved?'  ·  saved':'  ·  not saved yet');
   document.getElementById('gc-preview').classList.add('show');
   gcRenderSaveTest();
 }

@@ -1,7 +1,7 @@
 // PER Pasig - Pasig Emergency Ready
-// Service Worker v2.0.2 - Network-first for HTML, cache-first for static assets
+// Service Worker v2.0.3 - Network-first for HTML, cache-first for static assets
 
-const CACHE_NAME = 'per-pasig-v2.0.2';
+const CACHE_NAME = 'per-pasig-v2.0.3';
 
 // All assets to cache on install
 const ASSETS = [

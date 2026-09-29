@@ -272,12 +272,19 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-thumb.pending img{position:absolute;inset:0}
 .gc-spin{position:absolute;left:50%;top:50%;width:22px;height:22px;margin:-11px 0 0 -11px;border:3px solid rgba(255,255,255,.35);border-top-color:#FFD700;border-radius:50%;animation:gcspin .8s linear infinite}
 @keyframes gcspin{to{transform:rotate(360deg)}}
+.gc-help{display:none;position:absolute;inset:0;background:rgba(0,0,0,.6);z-index:160;align-items:center;justify-content:center;padding:16px}
+.gc-help.show{display:flex}
+.gc-help-card{background:#fff;border-radius:12px;padding:16px;display:flex;flex-direction:column;gap:10px;font-size:13px;color:#222;max-width:420px;width:100%}
+.gc-help-card h3{font-size:15px;color:#0B3D91}
+.gc-help-card ol{padding-left:20px;display:flex;flex-direction:column;gap:6px;line-height:1.4}
+.gc-help-tip{font-size:11px;color:#666}
+.gc-help-diag{font-size:9px;color:#aaa;text-align:center}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v2.0.2</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span>PER Pasig v2.0.3</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -653,6 +660,20 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <button class="btn-outline" id="gc-share-all" onclick="gcShareAll()">📤 SHARE ALL</button>
     </div>
     <button class="gc-clear" id="gc-clear" onclick="gcClearAll()">Clear photos from this session</button>
+  </div>
+  <div class="gc-help" id="gc-help" onclick="if(event.target===this)gcHideShareHelp()">
+    <div class="gc-help-card">
+      <h3>📤 Share <span id="gc-help-count"></span> from your Gallery</h3>
+      <p id="gc-help-saved"></p>
+      <ol>
+        <li>Open <b>Gallery</b> → <b>Albums</b> → <b>Download</b><br><small>(or <b>My Files → Downloads</b>)</small></li>
+        <li><b>Long-press</b> one photo, then tap the others to select them</li>
+        <li>Tap <b>Share</b> → Messenger, Viber, email…</li>
+      </ol>
+      <p class="gc-help-tip">Photos are named <b>PERPasig_date_time_##.jpg</b> so they stay in order.</p>
+      <button class="btn-primary" onclick="gcHideShareHelp()">GOT IT</button>
+      <div class="gc-help-diag" id="gc-help-diag"></div>
+    </div>
   </div>
   <div class="gc-preview" id="gc-preview">
     <img id="gc-pv-img" alt="Photo preview">
@@ -2096,13 +2117,24 @@ function gcSaveAll(){
 function gcShareAll(){if(!gc.photos.length){showToast('No photos yet','#D44000');return;}gcShareFiles(gc.photos);}
 function gcShareFiles(list){
   var files=list.map(function(p){return new File([p.blob],p.name,{type:'image/jpeg'});});
-  var ok=navigator.share&&navigator.canShare&&navigator.canShare({files:files});
-  if(!ok){showToast(list.length>1?'Sharing many photos isn\'t supported here — share one at a time':'Sharing isn\'t available — use SAVE','#D44000');return;}
+  var hasShare=!!navigator.share, hasCan=!!navigator.canShare;
+  var canFiles=hasCan?navigator.canShare({files:files}):hasShare;
+  if(!hasShare||!canFiles){gcShowShareHelp(list.length,hasShare,hasCan);return;}
   navigator.share({files:files}).catch(function(err){
     if(err&&err.name==='AbortError')return;
-    showToast(list.length>1?'Too many to share at once — try fewer photos':'Share failed — use SAVE','#D44000');
+    gcShowShareHelp(list.length,hasShare,hasCan);
   });
 }
+// The app's built-in browser (Android WebView inside Median) can't hand photos to other apps.
+// The photos are already saved, so guide the user to share them from Gallery instead.
+function gcShowShareHelp(n,hasShare,hasCan){
+  var saved=gc.photos.filter(function(p){return p.saved;}).length;
+  document.getElementById('gc-help-count').textContent=n>1?n+' photos':'this photo';
+  document.getElementById('gc-help-saved').textContent=saved===gc.photos.length?'✓ All '+saved+' photos are already saved on your phone.':'⚠️ '+(gc.photos.length-saved)+' photo(s) not saved yet — tap SAVE ALL first.';
+  document.getElementById('gc-help-diag').textContent='share:'+(hasShare?'yes':'no')+' · files:'+(hasCan?'check':'n/a');
+  document.getElementById('gc-help').classList.add('show');
+}
+function gcHideShareHelp(){document.getElementById('gc-help').classList.remove('show');}
 
 // ===== FAMILY EMERGENCY PLAN (feature 2) =====
 var familyMemberCount=0;

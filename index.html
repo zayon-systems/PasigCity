@@ -230,12 +230,47 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .type-btn{border:2px solid #e3e8f2;background:#fff;border-radius:12px;padding:14px 8px;font-size:13px;font-weight:800;color:#0d2345;cursor:pointer;font-family:Arial,sans-serif}
 .type-btn span{display:block;font-size:26px;margin-bottom:4px}
 .badge-custom{font-size:9px;font-weight:700;background:#FFC72C;color:#3d2900;padding:2px 6px;border-radius:999px;margin-left:6px}
+/* ===== GEOTAG CAMERA v2 (multi-photo) ===== */
+.gc-body{gap:8px}
+.gc-gps{display:flex;align-items:center;gap:8px;background:#1b1b1b;color:#eee;border-radius:8px;padding:8px 10px;font-size:11px;font-weight:700;cursor:pointer}
+.gc-dot{width:10px;height:10px;border-radius:50%;background:#777;flex-shrink:0}
+.gc-dot.good{background:#2ecc40}.gc-dot.fair{background:#ff9f1a}.gc-dot.poor,.gc-dot.off{background:#e53935}
+.gc-dot.searching{background:#FFD700;animation:pulse 1.2s infinite}
+.gc-viewfinder{position:relative;background:#000;border-radius:10px;overflow:hidden;min-height:240px;max-height:56vh;display:flex;align-items:center;justify-content:center}
+.gc-viewfinder video{width:100%;max-height:56vh;object-fit:contain;display:block}
+.gc-flash{position:absolute;inset:0;background:#fff;opacity:0;pointer-events:none;transition:opacity .15s}
+.gc-flash.on{opacity:.8;transition:none}
+.gc-live{position:absolute;left:0;right:0;bottom:0;background:rgba(0,0,0,.6);border-left:4px solid #0B3D91;color:#fff;padding:6px 8px;font-size:10px;line-height:1.35;pointer-events:none}
+.gc-live b{color:#FFD700;font-size:11px}
+.gc-live small{color:#bbb;font-size:9px}
+.gc-fallback{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:16px;text-align:center;color:#eee;font-size:12px;background:#111}
+.gc-fallback .btn-primary{width:auto;padding:10px 18px}
+.gc-controls{display:flex;align-items:center;justify-content:space-between;padding:4px 8px}
+.gc-shutter{width:72px;height:72px;border-radius:50%;background:#fff;border:6px solid #0B3D91;box-shadow:0 0 0 3px #fff inset;cursor:pointer}
+.gc-shutter:active{transform:scale(.92);background:#d7e3ff}
+.gc-alt,.gc-count{width:64px;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10px;color:#555;background:none;border:none;font-weight:700}
+.gc-alt{font-size:22px;cursor:pointer}.gc-alt span{font-size:9px}
+.gc-count b{font-size:22px;color:#0B3D91}
+.gc-tray{display:flex;gap:6px;overflow-x:auto;padding:2px 0 4px;min-height:4px}
+.gc-thumb{position:relative;flex:0 0 64px;height:64px;border-radius:6px;overflow:hidden;background:#222;cursor:pointer}
+.gc-thumb img{width:100%;height:100%;object-fit:cover;display:block}
+.gc-thumb .n{position:absolute;left:3px;top:3px;background:rgba(0,0,0,.7);color:#fff;font-size:9px;font-weight:700;border-radius:4px;padding:1px 4px}
+.gc-thumb .s{position:absolute;right:3px;bottom:3px;background:#1a7a32;color:#fff;font-size:9px;border-radius:50%;width:15px;height:15px;display:flex;align-items:center;justify-content:center}
+.gc-thumb.pending{display:flex;align-items:center;justify-content:center;color:#FFD700;font-size:10px;font-weight:700}
+.gc-toggle{display:flex;align-items:center;gap:8px;font-size:12px;color:#333;font-weight:700}
+.gc-toggle input{width:18px;height:18px}
+.gc-clear{background:none;border:none;color:#999;font-size:11px;text-decoration:underline;cursor:pointer;padding:4px}
+.gc-preview{display:none;position:absolute;inset:0;background:rgba(0,0,0,.95);z-index:150;flex-direction:column;padding:12px;gap:10px}
+.gc-preview.show{display:flex}
+.gc-preview img{flex:1;min-height:0;width:100%;object-fit:contain}
+.gc-preview .gc-pv-name{color:#bbb;font-size:10px;text-align:center;word-break:break-all}
+.gc-preview .btn-outline{background:transparent;color:#fff;border-color:#fff}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v1.0</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span>PER Pasig v2.0</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -574,7 +609,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
   </div>
 </div>
 
-<!-- ===== GEOTAG CAMERA ===== -->
+<!-- ===== GEOTAG CAMERA v2 (multi-photo) ===== -->
 <div class="screen" id="screen-camera">
   <div class="header">
     <div class="header-top">
@@ -583,22 +618,45 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <div style="width:32px"></div>
     </div>
   </div>
-  <div class="feature-body">
-    <div class="feature-hero">
-      <h2>📷 Photo with Location Stamp</h2>
-      <p>Take a photo and it will be stamped with your location, date/time, and your name & contact number — useful for documenting damage, injuries, or your exact location for responders.</p>
+  <div class="feature-body gc-body">
+    <div class="hint-box" id="gc-profile-warn" style="display:none">⚠️ Your name or number isn't set. <a onclick="showScreen('profile')" style="text-decoration:underline"><b>Set it in Profile</b></a> — it's printed on every photo.</div>
+    <div class="profile-field"><label>Location note (printed on every photo)</label><input type="text" placeholder="e.g. In front of Barangay Hall, near Waltermart" id="cam-location-desc"></div>
+    <div class="gc-gps" id="gc-gps" onclick="gcRestartGPS()"><span class="gc-dot searching" id="gc-gps-dot"></span><span id="gc-gps-text">Locating GPS…</span></div>
+    <div class="gc-viewfinder" id="gc-viewfinder">
+      <video id="gc-video" playsinline muted autoplay></video>
+      <div class="gc-flash" id="gc-flash"></div>
+      <div class="gc-live" id="gc-live"></div>
+      <div class="gc-fallback" id="gc-fallback" style="display:none">
+        <p id="gc-fallback-msg">Opening camera…</p>
+        <button class="btn-primary" onclick="gcStartCamera()">↻ TRY AGAIN</button>
+        <p style="font-size:10px;color:#aaa">or tap 📱 Phone cam below</p>
+      </div>
     </div>
-    <div class="profile-field"><label>Location</label><input type="text" placeholder="e.g. In front of Barangay Hall, near Waltermart" id="cam-location-desc"></div>
-    <div class="hint-box" id="cam-gps-note">GPS coordinates will also be added automatically if available.</div>
-    <div class="camera-frame" id="camera-frame">
-      <span style="color:#666;font-size:12px">No photo yet</span>
+    <div class="gc-controls">
+      <button class="gc-alt" onclick="document.getElementById('gc-file').click()">📱<span>Phone cam</span></button>
+      <button class="gc-shutter" id="gc-shutter" onclick="gcShutter()" aria-label="Take photo"></button>
+      <div class="gc-count"><b id="gc-count">0</b><span>photos</span></div>
     </div>
-    <input type="file" accept="image/*" capture="environment" id="camera-input" style="display:none" onchange="handleCameraPhoto(event)">
-    <button class="btn-primary" onclick="document.getElementById('camera-input').click()">📷 TAKE PHOTO</button>
-    <div class="action-row" id="camera-actions" style="display:none">
-      <button class="btn-primary" onclick="shareGeotagPhoto()">📤 SHARE PHOTO</button>
+    <input type="file" accept="image/*" capture="environment" id="gc-file" style="display:none" onchange="gcFromFile(event)">
+    <div class="gc-tray" id="gc-tray"></div>
+    <label class="gc-toggle"><input type="checkbox" id="gc-autosave" onchange="gcSetAutoSave(this.checked)"> Auto-save each photo to phone</label>
+    <div class="action-row">
+      <button class="btn-primary" id="gc-save-all" onclick="gcSaveAll()">💾 SAVE ALL</button>
+      <button class="btn-outline" id="gc-share-all" onclick="gcShareAll()">📤 SHARE ALL</button>
     </div>
-    <div class="hint-box">Tip: fill in the Location box before or after taking the photo — it gets stamped either way, since you can retake the stamp by tapping Take Photo again.</div>
+    <button class="gc-clear" id="gc-clear" onclick="gcClearAll()">Clear photos from this session</button>
+  </div>
+  <div class="gc-preview" id="gc-preview">
+    <img id="gc-pv-img" alt="Photo preview">
+    <div class="gc-pv-name" id="gc-pv-name"></div>
+    <div class="action-row">
+      <button class="btn-primary" onclick="gcPreviewAction('save')">💾 SAVE</button>
+      <button class="btn-outline" onclick="gcPreviewAction('share')">📤 SHARE</button>
+    </div>
+    <div class="action-row">
+      <button class="btn-outline" onclick="gcPreviewAction('delete')">🗑 DELETE</button>
+      <button class="btn-outline" onclick="gcClosePreview()">✕ CLOSE</button>
+    </div>
   </div>
 </div>
 
@@ -792,7 +850,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <div class="ls-note">Enable Android's built-in Emergency Information so first responders can access your details from the lock screen.</div>
     </div>
     <div class="about-card">
-      <h3>App Features v1.0</h3>
+      <h3>App Features v2.0</h3>
       <div class="features-list">
         <div class="feature-item"><span class="feature-check">✓</span><span>Pasig emergency hotlines by emergency type — tap, then press Call</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Backup call order — next number offered instantly if a line is busy</span></div>
@@ -801,7 +859,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
         <div class="feature-item"><span class="feature-check">✓</span><span>"In Case of Emergency" card for first responders</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Personal emergency profile with photo</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Barangay hotline for all 30 Pasig barangays, with extra numbers</span></div>
-        <div class="feature-item"><span class="feature-check">✓</span><span>Geotagged emergency camera with location & contact stamp</span></div>
+        <div class="feature-item"><span class="feature-check">✓</span><span>Geotag camera: take multiple photos, each stamped with GPS, date/time & your name — auto-saved to your phone</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Family Emergency Plan builder</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Nearest government & private hospital locator</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Official alerts from OCD, PAGASA, NDRRMC & Pasig City DRRMO</span></div>
@@ -1563,101 +1621,408 @@ function setManualLocation(){
   showToast('✓ Location set manually');
 }
 
-// ===== GEOTAG CAMERA (feature 1) =====
-var geotagCanvas=null;
-function handleCameraPhoto(e){
-  var file=e.target.files[0];if(!file)return;
-  var r=new FileReader();
-  r.onload=function(ev){
-    var img=new Image();
-    img.onload=function(){
-      var c=document.createElement('canvas');
-      var MAX=1600,w=img.width,h=img.height;
-      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
-      c.width=w;c.height=h;
-      var ctx=c.getContext('2d');
-      ctx.drawImage(img,0,0,w,h);
+// ===== GEOTAG CAMERA v2 (multi-photo, stamped, saved) =====
+// Time source: the phone's clock, read at the moment the shutter is tapped.
+// Photographer: name + number from the in-app Profile (localStorage p-name / p-own-num).
+var GC_APP_NAME='PER Pasig';      // printed in the stamp footer + EXIF Software
+var GC_FILE_PREFIX='PERPasig';    // file name: PERPasig_20260929_112105_01.jpg
+var GC_MAX_PHOTOS=30;             // per session, keeps memory safe on budget phones
+var GC_STALE_MS=30000;            // GPS fix older than this is labelled with its age
+var gc={stream:null,imageCapture:null,watchId:null,fix:null,photos:[],queue:Promise.resolve(),
+        seq:0,busy:0,timer:null,open:false,previewId:null,clearArmed:false};
 
-      var locText=(document.getElementById('cam-location-desc').value||'').trim();
-      var gpsText=lastPos?(lastPos.lat.toFixed(6)+', '+lastPos.lng.toFixed(6)):'';
-      var locationLine='Location: '+(locText||gpsText||'Not provided');
-      if(locText&&gpsText)locationLine+=' ('+gpsText+')';
-      var dateLine=new Date().toLocaleString();
-      var name=(localStorage.getItem('p-name')||'').trim();
-      var contact=(localStorage.getItem('p-own-num')||'').trim();
-      var nameLine=name||'(name not set in profile)';
-      var contactLine=contact||'(contact not set in profile)';
-      var lines=[locationLine,dateLine,nameLine,contactLine];
-
-      var fontSize=Math.max(12,Math.round(w*0.026));
-      ctx.font='bold '+fontSize+'px Arial';
-      var padX=12,padY=8,lineH=Math.round(fontSize*1.35);
-      var textW=0;
-      lines.forEach(function(l){textW=Math.max(textW,ctx.measureText(l).width);});
-      var boxH=lineH*lines.length+padY*2;
-      var boxW=Math.min(w-24,textW+padX*2+8);
-      // Lower CENTER of the photo
-      var boxX=Math.round((w-boxW)/2);
-      var boxY=h-boxH-Math.round(h*0.06);
-      ctx.fillStyle='rgba(0,0,0,0.65)';
-      ctx.fillRect(boxX,boxY,boxW,boxH);
-      ctx.textAlign='center';
-      lines.forEach(function(l,i){
-        ctx.fillStyle=(i===0)?'#FFC72C':'white';
-        ctx.font=(i===0?'bold ':'')+fontSize+'px Arial';
-        ctx.fillText(l,w/2,boxY+padY+fontSize+(i*lineH),boxW-padX);
-      });
-
-      var frame=document.getElementById('camera-frame');
-      frame.innerHTML='';frame.appendChild(c);
-      geotagCanvas=c;
-      document.getElementById('camera-actions').style.display='flex';
-    };img.src=ev.target.result;
-  };r.readAsDataURL(file);
+var GC_DAYS=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+var GC_MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+function gcPad(n,l){n=String(n);while(n.length<(l||2))n='0'+n;return n;}
+function gcTz(d){var o=-d.getTimezoneOffset(),s=o>=0?'+':'-';o=Math.abs(o);return s+gcPad(Math.floor(o/60))+':'+gcPad(o%60);}
+function gcFmtDate(d){
+  var h=d.getHours();
+  return GC_DAYS[d.getDay()]+', '+gcPad(d.getDate())+' '+GC_MON[d.getMonth()]+' '+d.getFullYear()+
+    '  '+gcPad(h%12||12)+':'+gcPad(d.getMinutes())+':'+gcPad(d.getSeconds())+' '+(h<12?'AM':'PM')+' GMT'+gcTz(d);
 }
-function shareGeotagPhoto(){
-  if(!geotagCanvas)return;
-  showToast('Preparing photo…');
-  geotagCanvas.toBlob(function(blob){
-    var file=new File([blob],'PER-Pasig-geotag-'+Date.now()+'.jpg',{type:'image/jpeg'});
-    // Files-only payload (no title/text alongside it) — combining files with
-    // title/text is what was triggering an "Open with" resolver instead of
-    // the proper multi-app share sheet on some Android WebViews. A minimal
-    // files-only call is the most broadly compatible per the Web Share spec.
-    // Try the phone's own share sheet first. Some app wrappers don't provide
-    // canShare() even though share() works, so only rule it out if canShare
-    // exists AND says no.
-    var canShareFiles = !navigator.canShare || navigator.canShare({files:[file]});
-    if(navigator.share && canShareFiles){
-      navigator.share({files:[file]}).then(function(){
-        showToast('Choose Messenger or another app');
-      }).catch(function(err){
-        if(err && err.name==='AbortError'){return;} // user cancelled — no need to fall back
-        fallbackDownloadPhoto(blob);
-      });
-    }else{
-      fallbackDownloadPhoto(blob);
-    }
-  },'image/jpeg',0.85);
+function gcFmtAge(ms){var s=Math.round(ms/1000);return s<60?s+' s':Math.round(s/60)+' min';}
+function gcProfile(){
+  return {name:(localStorage.getItem('p-name')||'').trim(),contact:(localStorage.getItem('p-own-num')||'').trim()};
 }
-function fallbackDownloadPhoto(blob){
-  try{
-    var url=URL.createObjectURL(blob);
-    var a=document.createElement('a');
-    a.download='PER-Pasig-geotag-'+Date.now()+'.jpg';
-    a.href=url;
-    a.style.display='none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(function(){document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
-    showToast('Saved — check Downloads or Gallery');
-  }catch(e){
-    showToast('Sharing is not available on this device','#D44000');
+
+// ---------- Open / close with the screen ----------
+function gcOpen(){
+  gc.open=true;
+  var p=gcProfile();
+  document.getElementById('gc-profile-warn').style.display=(p.name&&p.contact)?'none':'block';
+  var auto=true;try{auto=localStorage.getItem('gc-autosave')!=='0';}catch(e){}
+  document.getElementById('gc-autosave').checked=auto;
+  gcStartCamera();gcStartGPS();
+  clearInterval(gc.timer);gc.timer=setInterval(gcRenderLive,1000);gcRenderLive();
+  gcRenderTray();
+}
+function gcClose(){
+  if(!gc.open)return;
+  gc.open=false;
+  gcStopCamera();gcStopGPS();clearInterval(gc.timer);gc.timer=null;
+  var unsaved=gc.photos.filter(function(p){return !p.saved;}).length;
+  if(unsaved)showToast('⚠️ '+unsaved+' photo(s) not saved yet','#D44000');
+}
+(function(){ // hook into the app's existing navigation without editing showScreen itself
+  var orig=showScreen;
+  showScreen=function(n){orig(n);if(n==='camera')gcOpen();else gcClose();};
+})();
+document.addEventListener('visibilitychange',function(){
+  if(!gc.open)return;
+  if(document.hidden){gcStopCamera();}else{gcStartCamera();}
+});
+
+// ---------- Camera ----------
+function gcShowFallback(msg){
+  document.getElementById('gc-fallback-msg').textContent=msg;
+  document.getElementById('gc-fallback').style.display='flex';
+}
+function gcStartCamera(){
+  if(gc.stream)return;
+  if(!navigator.mediaDevices||!navigator.mediaDevices.getUserMedia){
+    gcShowFallback('Live camera is not available here. Use 📱 Phone cam below.');return;
   }
+  document.getElementById('gc-fallback').style.display='none';
+  navigator.mediaDevices.getUserMedia({audio:false,video:{facingMode:{ideal:'environment'},width:{ideal:3840},height:{ideal:2160}}})
+  .then(function(s){
+    if(!gc.open||document.hidden){s.getTracks().forEach(function(t){t.stop();});return;}
+    gc.stream=s;
+    var v=document.getElementById('gc-video');v.srcObject=s;v.play().catch(function(){});
+    gc.imageCapture=null;
+    try{if(window.ImageCapture)gc.imageCapture=new ImageCapture(s.getVideoTracks()[0]);}catch(e){}
+  })
+  .catch(function(err){
+    gcShowFallback(err&&err.name==='NotAllowedError'
+      ?'Camera permission denied. Allow Camera for this app in phone Settings, or use 📱 Phone cam.'
+      :'Could not open the live camera ('+(err&&err.name||'error')+').');
+  });
+}
+function gcStopCamera(){
+  if(gc.stream){gc.stream.getTracks().forEach(function(t){t.stop();});}
+  gc.stream=null;gc.imageCapture=null;
+  var v=document.getElementById('gc-video');if(v)v.srcObject=null;
 }
 
-// Keep alias so any leftover "downloadGeotagPhoto" calls still work
-function downloadGeotagPhoto(){ shareGeotagPhoto(); }
+// ---------- GPS (live while camera is open) ----------
+function gcStartGPS(){
+  if(!navigator.geolocation){gcSetGps('off','GPS not supported on this device');return;}
+  if(gc.watchId!=null)return;
+  if(!gc.fix)gcSetGps('searching','Locating GPS…');
+  gc.watchId=navigator.geolocation.watchPosition(function(p){
+    gc.fix={lat:p.coords.latitude,lng:p.coords.longitude,acc:p.coords.accuracy,t:Date.now()};
+    if(typeof lastPos!=='undefined')lastPos={lat:gc.fix.lat,lng:gc.fix.lng}; // keep rest of app in sync
+    gcUpdateGpsUI();
+  },function(err){
+    if(err&&err.code===1)gcSetGps('off','Location permission denied — enable it in Settings, then tap here');
+    else if(err&&err.code===2)gcSetGps('off','GPS is off — turn on Location, then tap here');
+    else if(!gc.fix)gcSetGps('searching','Still searching for GPS… (go near a window or outside)');
+  },{enableHighAccuracy:true,maximumAge:5000,timeout:30000});
+}
+function gcStopGPS(){
+  if(gc.watchId!=null){try{navigator.geolocation.clearWatch(gc.watchId);}catch(e){}}
+  gc.watchId=null;
+}
+function gcRestartGPS(){gcStopGPS();gcStartGPS();}
+function gcSetGps(cls,text){
+  document.getElementById('gc-gps-dot').className='gc-dot '+cls;
+  document.getElementById('gc-gps-text').textContent=text;
+}
+function gcCurrentFix(){ // best fix we have, with its age
+  if(gc.fix)return {lat:gc.fix.lat,lng:gc.fix.lng,acc:gc.fix.acc,age:Date.now()-gc.fix.t};
+  if(typeof lastPos!=='undefined'&&lastPos)return {lat:lastPos.lat,lng:lastPos.lng,acc:null,age:null};
+  return null;
+}
+function gcUpdateGpsUI(){
+  var f=gcCurrentFix();if(!f)return;
+  var acc=f.acc==null?null:Math.round(f.acc);
+  var cls=acc==null?'fair':acc<=20?'good':acc<=100?'fair':'poor';
+  var txt='GPS ±'+(acc==null?'?':acc)+' m · '+f.lat.toFixed(6)+', '+f.lng.toFixed(6);
+  if(f.age!=null&&f.age>GC_STALE_MS){cls='poor';txt+=' · last fix '+gcFmtAge(f.age)+' ago';}
+  gcSetGps(cls,txt);
+}
+
+// ---------- What gets stamped ----------
+function gcSnapshotMeta(date){
+  var p=gcProfile();
+  return {date:date,seq:++gc.seq,fix:gcCurrentFix(),
+    place:(document.getElementById('cam-location-desc').value||'').trim(),
+    name:p.name,contact:p.contact};
+}
+function gcStampLines(m){
+  var f=m.fix,coord;
+  if(f){
+    coord='Lat '+f.lat.toFixed(6)+'°  Long '+f.lng.toFixed(6)+'°';
+    if(f.acc!=null)coord+='  (±'+Math.round(f.acc)+' m)';
+    if(f.age!=null&&f.age>GC_STALE_MS)coord+='  [GPS fix '+gcFmtAge(f.age)+' old]';
+  }else coord='GPS not available';
+  return {
+    place:m.place||'Location note: not provided',
+    coord:coord,
+    time:gcFmtDate(m.date),
+    by:'Taken by: '+(m.name||'(name not set in Profile)')+'  ·  '+(m.contact||'(no number in Profile)'),
+    foot:GC_APP_NAME+' Geotag Camera  ·  Photo #'+gcPad(m.seq)+'  ·  phone time'
+  };
+}
+function gcRenderLive(){
+  if(!gc.open)return;
+  var L=gcStampLines(gcSnapshotMetaPreview());
+  var esc=function(s){return String(s).replace(/[&<>]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;'}[c];});};
+  document.getElementById('gc-live').innerHTML='<b>'+esc(L.place)+'</b><br>'+esc(L.coord)+'<br>'+esc(L.time)+'<br>'+esc(L.by)+'<br><small>'+esc(L.foot)+'</small>';
+  if(gc.fix)gcUpdateGpsUI();
+}
+function gcSnapshotMetaPreview(){ // same as snapshot but doesn't consume a photo number
+  var p=gcProfile();
+  return {date:new Date(),seq:gc.seq+1,fix:gcCurrentFix(),
+    place:(document.getElementById('cam-location-desc').value||'').trim(),name:p.name,contact:p.contact};
+}
+
+// ---------- Capture ----------
+function gcFlash(){
+  var f=document.getElementById('gc-flash');f.classList.add('on');
+  setTimeout(function(){f.classList.remove('on');},60);
+  try{if(navigator.vibrate)navigator.vibrate(30);}catch(e){}
+}
+function gcGrabFrame(v){
+  var c=document.createElement('canvas');c.width=v.videoWidth;c.height=v.videoHeight;
+  c.getContext('2d').drawImage(v,0,0);return c;
+}
+function gcTakeHiRes(){
+  return Promise.race([
+    gc.imageCapture.takePhoto(),
+    new Promise(function(_,rej){setTimeout(function(){rej(new Error('timeout'));},4000);})
+  ]).then(function(blob){
+    return createImageBitmap(blob,{imageOrientation:'from-image'}).catch(function(){return createImageBitmap(blob);});
+  });
+}
+function gcShutter(){
+  if(gc.photos.length+gc.busy>=GC_MAX_PHOTOS){showToast('Limit '+GC_MAX_PHOTOS+' photos — save & clear first','#D44000');return;}
+  var v=document.getElementById('gc-video');
+  if(!gc.stream||!v.videoWidth){showToast('Camera not ready — use 📱 Phone cam','#D44000');return;}
+  var meta=gcSnapshotMeta(new Date());        // time + GPS locked at the tap
+  meta.portrait=v.videoHeight>v.videoWidth;
+  gcFlash();
+  var frame=gcGrabFrame(v);                    // the moment is never lost, even if hi-res fails
+  var useHiRes=!!gc.imageCapture&&gc.busy===0; // rapid taps use the instant frame so each photo = its own moment
+  var src=useHiRes?gcTakeHiRes().catch(function(){return frame;}):Promise.resolve(frame);
+  gc.busy++;gcRenderTray();
+  gcEnqueue(src,meta);
+}
+function gcFromFile(e){
+  var file=e.target.files&&e.target.files[0];e.target.value='';
+  if(!file)return;
+  if(gc.photos.length+gc.busy>=GC_MAX_PHOTOS){showToast('Limit '+GC_MAX_PHOTOS+' photos — save & clear first','#D44000');return;}
+  var meta=gcSnapshotMeta(new Date());
+  var src=createImageBitmap(file,{imageOrientation:'from-image'}).catch(function(){return createImageBitmap(file);});
+  gc.busy++;gcRenderTray();
+  gcEnqueue(src,meta);
+}
+function gcEnqueue(srcPromise,meta){
+  gc.queue=gc.queue.then(function(){return srcPromise;})
+    .then(function(src){return gcStampAndStore(src,meta);})
+    .catch(function(err){console.error('[gc]',err);showToast('⚠️ Photo #'+meta.seq+' failed — try again','#D44000');})
+    .then(function(){gc.busy--;gcRenderTray();});
+}
+
+// ---------- Stamp + encode ----------
+function gcWrap(ctx,text,maxW,maxLines){
+  var words=String(text).split(/\s+/),lines=[],cur='';
+  for(var i=0;i<words.length;i++){
+    var t=cur?cur+' '+words[i]:words[i];
+    if(ctx.measureText(t).width<=maxW||!cur){cur=t;}else{lines.push(cur);cur=words[i];}
+  }
+  if(cur)lines.push(cur);
+  if(lines.length>maxLines){
+    lines=lines.slice(0,maxLines);var last=lines[maxLines-1];
+    while(last.length>1&&ctx.measureText(last+'…').width>maxW)last=last.slice(0,-1);
+    lines[maxLines-1]=last+'…';
+  }
+  return lines;
+}
+function gcDrawStamp(ctx,w,h,m){
+  var L=gcStampLines(m);
+  var fs=Math.max(14,Math.round(Math.min(w,h)*0.032));
+  var pad=Math.round(fs*0.7),bar=Math.max(4,Math.round(fs*0.3)),maxW=w-pad*2-bar;
+  var rows=[],specs=[
+    {t:L.place,size:Math.round(fs*1.15),bold:true,color:'#FFD700',max:2},
+    {t:L.coord,size:fs,bold:false,color:'#FFFFFF',max:2},
+    {t:L.time,size:fs,bold:false,color:'#FFFFFF',max:1},
+    {t:L.by,size:fs,bold:true,color:'#FFFFFF',max:2},
+    {t:L.foot,size:Math.round(fs*0.72),bold:false,color:'#BBBBBB',max:1}
+  ];
+  specs.forEach(function(s){
+    var font=(s.bold?'bold ':'')+s.size+'px Arial';ctx.font=font;
+    gcWrap(ctx,s.t,maxW,s.max).forEach(function(line){rows.push({t:line,font:font,color:s.color,lh:Math.round(s.size*1.3),size:s.size});});
+  });
+  var boxH=pad*2+rows.reduce(function(a,r){return a+r.lh;},0);
+  var y0=h-boxH;
+  ctx.fillStyle='rgba(0,0,0,0.62)';ctx.fillRect(0,y0,w,boxH);
+  ctx.fillStyle='#0B3D91';ctx.fillRect(0,y0,bar,boxH);
+  ctx.textAlign='left';ctx.textBaseline='middle';
+  ctx.shadowColor='rgba(0,0,0,0.8)';ctx.shadowBlur=Math.round(fs*0.15);
+  var y=y0+pad;
+  rows.forEach(function(r){ctx.font=r.font;ctx.fillStyle=r.color;ctx.fillText(r.t,bar+pad,y+r.lh/2);y+=r.lh;});
+  ctx.shadowBlur=0;
+}
+function gcStampAndStore(src,meta){
+  var sw=src.width,sh=src.height;
+  // Some phones return the hi-res photo sideways; match the viewfinder orientation.
+  var rotate=!!meta.portrait&&sw>sh;
+  var w=rotate?sh:sw,h=rotate?sw:sh;
+  var scale=Math.min(1,4000/Math.max(w,h));
+  w=Math.round(w*scale);h=Math.round(h*scale);
+  var c=document.createElement('canvas');c.width=w;c.height=h;
+  var ctx=c.getContext('2d');
+  if(rotate){ctx.save();ctx.translate(w,0);ctx.rotate(Math.PI/2);ctx.drawImage(src,0,0,h,w);ctx.restore();}
+  else ctx.drawImage(src,0,0,w,h);
+  if(src.close)try{src.close();}catch(e){}
+  gcDrawStamp(ctx,w,h,meta);
+  return new Promise(function(res,rej){c.toBlob(function(b){b?res(b):rej(new Error('encode failed'));},'image/jpeg',0.9);})
+    .then(function(blob){c.width=c.height=0;return gcAddExif(blob,meta).catch(function(){return blob;});})
+    .then(function(blob){
+      var d=meta.date;
+      var name=GC_FILE_PREFIX+'_'+d.getFullYear()+gcPad(d.getMonth()+1)+gcPad(d.getDate())+'_'+
+        gcPad(d.getHours())+gcPad(d.getMinutes())+gcPad(d.getSeconds())+'_'+gcPad(meta.seq)+'.jpg';
+      var photo={id:'p'+meta.seq+'_'+d.getTime(),seq:meta.seq,blob:blob,url:URL.createObjectURL(blob),name:name,saved:false};
+      gc.photos.push(photo);
+      if(gcAutoSaveOn())gcSavePhoto(photo,true);
+    });
+}
+
+// ---------- EXIF (date/time + GPS written into the file, readable by Gallery / Google Photos) ----------
+function gcAddExif(blob,m){
+  return blob.arrayBuffer().then(function(buf){
+    var jpg=new Uint8Array(buf);
+    if(jpg[0]!==0xFF||jpg[1]!==0xD8)return blob;
+    var rest=jpg.subarray(2);
+    if(jpg[2]===0xFF&&jpg[3]===0xE0){rest=jpg.subarray(4+((jpg[4]<<8)|jpg[5]));} // drop JFIF APP0, EXIF goes first
+    var tiff=gcBuildTiff(m);
+    var segLen=2+6+tiff.length;
+    if(segLen>65535)return blob;
+    var out=new Uint8Array(2+2+segLen+rest.length);
+    out.set([0xFF,0xD8,0xFF,0xE1,(segLen>>8)&255,segLen&255],0);
+    out.set([0x45,0x78,0x69,0x66,0,0],6); // "Exif\0\0"
+    out.set(tiff,12);
+    out.set(rest,12+tiff.length);
+    return new Blob([out],{type:'image/jpeg'});
+  });
+}
+function gcBuildTiff(m){
+  function ascii(s){
+    s=String(s).normalize?String(s).normalize('NFD').replace(/[̀-ͯ]/g,''):String(s); // ñ → n
+    s=s.replace(/\u00B7/g,'-').replace(/[^\x20-\x7E]/g,'?');
+    var a=new Uint8Array(s.length+1);for(var i=0;i<s.length;i++)a[i]=s.charCodeAt(i);return a;
+  }
+  function u32(n){return [(n>>>24)&255,(n>>>16)&255,(n>>>8)&255,n&255];}
+  function rats(list){var o=[];list.forEach(function(r){o=o.concat(u32(r[0]),u32(r[1]));});return new Uint8Array(o);}
+  function E(tag,type,count,bytes){return {tag:tag,type:type,count:count,bytes:bytes instanceof Uint8Array?bytes:new Uint8Array(bytes)};}
+  function A(tag,s){var b=ascii(s);return E(tag,2,b.length,b);}
+  function dms(v){
+    v=Math.abs(v);var d=Math.floor(v),mf=(v-d)*60,mi=Math.floor(mf),s=Math.round((mf-mi)*60*10000);
+    if(s>=600000)s=599999;return rats([[d,1],[mi,1],[s,10000]]);
+  }
+  var d=m.date;
+  var dt=d.getFullYear()+':'+gcPad(d.getMonth()+1)+':'+gcPad(d.getDate())+' '+gcPad(d.getHours())+':'+gcPad(d.getMinutes())+':'+gcPad(d.getSeconds());
+  var L=gcStampLines(m);
+  var ifd0=[A(0x010E,L.place+' | '+L.by),A(0x0131,GC_APP_NAME+' Geotag Camera'),A(0x0132,dt),E(0x8769,4,1,[0,0,0,0])];
+  var exif=[A(0x9003,dt),A(0x9004,dt),A(0x9011,gcTz(d))];
+  var gps=null;
+  if(m.fix){
+    gps=[E(0x0000,1,4,[2,3,0,0]),A(0x0001,m.fix.lat>=0?'N':'S'),E(0x0002,5,3,dms(m.fix.lat)),
+         A(0x0003,m.fix.lng>=0?'E':'W'),E(0x0004,5,3,dms(m.fix.lng))];
+    if(m.fix.acc!=null)gps.push(E(0x001F,5,1,rats([[Math.round(m.fix.acc*100),100]])));
+    ifd0.push(E(0x8825,4,1,[0,0,0,0]));
+  }
+  function len(es){var n=2+12*es.length+4;es.forEach(function(e){if(e.bytes.length>4)n+=e.bytes.length+(e.bytes.length&1);});return n;}
+  var off0=8,offE=off0+len(ifd0),offG=offE+len(exif),total=offG+(gps?len(gps):0);
+  ifd0.forEach(function(e){if(e.tag===0x8769)e.bytes=new Uint8Array(u32(offE));if(e.tag===0x8825)e.bytes=new Uint8Array(u32(offG));});
+  var buf=new Uint8Array(total),dv=new DataView(buf.buffer);
+  buf.set([0x4D,0x4D,0x00,0x2A,0,0,0,8],0); // big-endian TIFF header, IFD0 at 8
+  function write(es,off){
+    es.sort(function(a,b){return a.tag-b.tag;});
+    dv.setUint16(off,es.length);var p=off+2,data=off+2+12*es.length+4;
+    es.forEach(function(e){
+      dv.setUint16(p,e.tag);dv.setUint16(p+2,e.type);dv.setUint32(p+4,e.count);
+      if(e.bytes.length<=4)buf.set(e.bytes,p+8);
+      else{dv.setUint32(p+8,data);buf.set(e.bytes,data);data+=e.bytes.length+(e.bytes.length&1);}
+      p+=12;
+    });
+    dv.setUint32(p,0);
+  }
+  write(ifd0,off0);write(exif,offE);if(gps)write(gps,offG);
+  return buf;
+}
+
+// ---------- Tray + preview ----------
+function gcRenderTray(){
+  var t=document.getElementById('gc-tray');if(!t)return;
+  var html='';
+  gc.photos.forEach(function(p){
+    html+='<div class="gc-thumb" onclick="gcOpenPreview(\''+p.id+'\')"><img src="'+p.url+'" alt=""><span class="n">#'+gcPad(p.seq)+'</span>'+(p.saved?'<span class="s">✓</span>':'')+'</div>';
+  });
+  for(var i=0;i<gc.busy;i++)html+='<div class="gc-thumb pending">…</div>';
+  t.innerHTML=html;t.scrollLeft=t.scrollWidth;
+  document.getElementById('gc-count').textContent=gc.photos.length+gc.busy;
+  var unsaved=gc.photos.filter(function(p){return !p.saved;}).length;
+  document.getElementById('gc-save-all').textContent=gc.photos.length&&!unsaved?'✓ ALL SAVED':'💾 SAVE ALL'+(unsaved?' ('+unsaved+')':'');
+}
+function gcFind(id){for(var i=0;i<gc.photos.length;i++)if(gc.photos[i].id===id)return gc.photos[i];return null;}
+function gcOpenPreview(id){
+  var p=gcFind(id);if(!p)return;gc.previewId=id;
+  document.getElementById('gc-pv-img').src=p.url;
+  document.getElementById('gc-pv-name').textContent=p.name+(p.saved?'  ·  saved':'  ·  not saved yet');
+  document.getElementById('gc-preview').classList.add('show');
+}
+function gcClosePreview(){document.getElementById('gc-preview').classList.remove('show');gc.previewId=null;}
+function gcPreviewAction(a){
+  var p=gcFind(gc.previewId);if(!p)return gcClosePreview();
+  if(a==='save'){gcSavePhoto(p);gcOpenPreview(p.id);}
+  else if(a==='share'){gcShareFiles([p]);}
+  else if(a==='delete'){gcRemove(p);gcClosePreview();showToast('Photo #'+gcPad(p.seq)+' deleted');}
+}
+function gcRemove(p){URL.revokeObjectURL(p.url);gc.photos=gc.photos.filter(function(x){return x!==p;});gcRenderTray();}
+function gcClearAll(){
+  if(!gc.photos.length)return;
+  var btn=document.getElementById('gc-clear');
+  var unsaved=gc.photos.filter(function(p){return !p.saved;}).length;
+  if(!gc.clearArmed){
+    gc.clearArmed=true;
+    btn.textContent='Tap again to clear '+gc.photos.length+' photo(s)'+(unsaved?' — '+unsaved+' NOT saved':'');
+    btn.style.color='#D44000';
+    setTimeout(function(){gc.clearArmed=false;btn.textContent='Clear photos from this session';btn.style.color='';},3500);
+    return;
+  }
+  gc.clearArmed=false;btn.textContent='Clear photos from this session';btn.style.color='';
+  gc.photos.slice().forEach(gcRemove);gc.seq=0;
+}
+
+// ---------- Save + share ----------
+function gcAutoSaveOn(){var el=document.getElementById('gc-autosave');return !!(el&&el.checked);}
+function gcSetAutoSave(on){try{localStorage.setItem('gc-autosave',on?'1':'0');}catch(e){}}
+function gcSavePhoto(p,quiet){
+  try{
+    var a=document.createElement('a');a.href=p.url;a.download=p.name;a.style.display='none';
+    document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},1500);
+    p.saved=true;gcRenderTray();
+    if(!quiet)showToast('💾 Saved '+p.name);
+  }catch(e){showToast('⚠️ Could not save — use SHARE instead','#D44000');}
+}
+function gcSaveAll(){
+  var list=gc.photos.filter(function(p){return !p.saved;});
+  if(!list.length)list=gc.photos.slice(); // everything saved already → save again on request
+  if(!list.length){showToast('No photos yet','#D44000');return;}
+  showToast('Saving '+list.length+' photo(s)…');
+  list.forEach(function(p,i){setTimeout(function(){gcSavePhoto(p,true);if(i===list.length-1)showToast('💾 '+list.length+' photo(s) saved to Downloads/Gallery');},i*700);});
+}
+function gcShareAll(){if(!gc.photos.length){showToast('No photos yet','#D44000');return;}gcShareFiles(gc.photos);}
+function gcShareFiles(list){
+  var files=list.map(function(p){return new File([p.blob],p.name,{type:'image/jpeg'});});
+  var ok=navigator.share&&navigator.canShare&&navigator.canShare({files:files});
+  if(!ok){showToast(list.length>1?'Sharing many photos isn\'t supported here — share one at a time':'Sharing isn\'t available — use SAVE','#D44000');return;}
+  navigator.share({files:files}).catch(function(err){
+    if(err&&err.name==='AbortError')return;
+    showToast(list.length>1?'Too many to share at once — try fewer photos':'Share failed — use SAVE','#D44000');
+  });
+}
 
 // ===== FAMILY EMERGENCY PLAN (feature 2) =====
 var familyMemberCount=0;

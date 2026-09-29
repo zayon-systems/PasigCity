@@ -265,12 +265,15 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 .gc-preview img{flex:1;min-height:0;width:100%;object-fit:contain}
 .gc-preview .gc-pv-name{color:#bbb;font-size:10px;text-align:center;word-break:break-all}
 .gc-preview .btn-outline{background:transparent;color:#fff;border-color:#fff}
+.gc-savetest{background:#222;border:1px dashed #FFD700;border-radius:8px;padding:8px;color:#eee;font-size:10px;line-height:1.4;display:flex;flex-direction:column;gap:6px}
+.gc-savetest-row{display:flex;gap:6px}
+.gc-savetest-row button{flex:1;background:#FFD700;color:#000;border:none;border-radius:6px;padding:8px 0;font-weight:900;font-size:13px;cursor:pointer}
 </style>
 </head>
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v2.0</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span>PER Pasig v2.0.1</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -649,6 +652,14 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
   <div class="gc-preview" id="gc-preview">
     <img id="gc-pv-img" alt="Photo preview">
     <div class="gc-pv-name" id="gc-pv-name"></div>
+    <div class="gc-savetest">
+      <div><b>🔧 SAVE TEST (temporary)</b> — tap each one, then check Gallery and My Files → Downloads. Tell me which puts the <b>stamped</b> photo on your phone.</div>
+      <div class="gc-savetest-row">
+        <button onclick="gcSaveTest('blob')">A</button><button onclick="gcSaveTest('data')">B</button>
+        <button onclick="gcSaveTest('mimg')">C</button><button onclick="gcSaveTest('mfile')">D</button>
+      </div>
+      <div>Now using: <b id="gc-savetest-cur"></b> · <span id="gc-savetest-bridge"></span></div>
+    </div>
     <div class="action-row">
       <button class="btn-primary" onclick="gcPreviewAction('save')">💾 SAVE</button>
       <button class="btn-outline" onclick="gcPreviewAction('share')">📤 SHARE</button>
@@ -1693,7 +1704,7 @@ function gcStartCamera(){
   })
   .catch(function(err){
     gcShowFallback(err&&err.name==='NotAllowedError'
-      ?'Camera permission denied. Allow Camera for this app in phone Settings, or use 📱 Phone cam.'
+      ?'Camera blocked. Phone Settings → Apps → PER Pasig → Permissions → Camera → Allow, then tap TRY AGAIN. Or use 📱 Phone cam.'
       :'Could not open the live camera ('+(err&&err.name||'error')+').');
   });
 }
@@ -1971,6 +1982,7 @@ function gcOpenPreview(id){
   document.getElementById('gc-pv-img').src=p.url;
   document.getElementById('gc-pv-name').textContent=p.name+(p.saved?'  ·  saved':'  ·  not saved yet');
   document.getElementById('gc-preview').classList.add('show');
+  gcRenderSaveTest();
 }
 function gcClosePreview(){document.getElementById('gc-preview').classList.remove('show');gc.previewId=null;}
 function gcPreviewAction(a){
@@ -1998,13 +2010,53 @@ function gcClearAll(){
 // ---------- Save + share ----------
 function gcAutoSaveOn(){var el=document.getElementById('gc-autosave');return !!(el&&el.checked);}
 function gcSetAutoSave(on){try{localStorage.setItem('gc-autosave',on?'1':'0');}catch(e){}}
+// Save methods. Median's Android downloader may not accept blob: URLs, so the
+// working method is chosen with the SAVE TEST panel in the photo preview and remembered.
+//  blob  = <a download> with blob: URL (works in Chrome)
+//  data  = <a download> with data: URL
+//  mimg  = Median bridge median.share.downloadImage (saves to Gallery)
+//  mfile = Median bridge median.share.downloadFile (saves to Downloads)
+function gcSaveMethod(){
+  var m=null;try{m=localStorage.getItem('gc-save-method');}catch(e){}
+  return m||'blob';
+}
+function gcBlobToDataURL(blob){
+  return new Promise(function(res,rej){var r=new FileReader();r.onload=function(){res(r.result);};r.onerror=function(){rej(new Error('read failed'));};r.readAsDataURL(blob);});
+}
+function gcAnchor(href,name){
+  var a=document.createElement('a');a.href=href;a.download=name;a.style.display='none';
+  document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},1500);
+}
+function gcSaveVia(method,p){
+  if(method==='blob'){gcAnchor(p.url,p.name);return Promise.resolve();}
+  return gcBlobToDataURL(p.blob).then(function(d){
+    if(method==='data'){gcAnchor(d,p.name);return;}
+    var md=window.median;
+    if(!md||!md.share)throw new Error('Median bridge not found');
+    if(method==='mimg')md.share.downloadImage({url:d});
+    else md.share.downloadFile({url:d,open:false});
+  });
+}
 function gcSavePhoto(p,quiet){
-  try{
-    var a=document.createElement('a');a.href=p.url;a.download=p.name;a.style.display='none';
-    document.body.appendChild(a);a.click();setTimeout(function(){document.body.removeChild(a);},1500);
+  return gcSaveVia(gcSaveMethod(),p).then(function(){
     p.saved=true;gcRenderTray();
-    if(!quiet)showToast('💾 Saved '+p.name);
-  }catch(e){showToast('⚠️ Could not save — use SHARE instead','#D44000');}
+    if(!quiet)showToast('💾 Sent to phone: '+p.name);
+  }).catch(function(e){
+    showToast('⚠️ Save failed ('+(e&&e.message||'error')+') — use SHARE','#D44000');
+  });
+}
+var GC_METHOD_LABEL={blob:'A · Blob link',data:'B · Data link',mimg:'C · Median → Gallery',mfile:'D · Median → Downloads'};
+function gcRenderSaveTest(){
+  var el=document.getElementById('gc-savetest-cur');if(el)el.textContent=GC_METHOD_LABEL[gcSaveMethod()]||gcSaveMethod();
+  var br=document.getElementById('gc-savetest-bridge');if(br)br.textContent=(window.median&&window.median.share)?'Median bridge: found ✓':'Median bridge: NOT found';
+}
+function gcSaveTest(method){
+  var p=gcFind(gc.previewId);if(!p)return;
+  try{localStorage.setItem('gc-save-method',method);}catch(e){}
+  gcRenderSaveTest();
+  gcSaveVia(method,p).then(function(){
+    showToast('Tried '+GC_METHOD_LABEL[method]+' — check Gallery & Downloads');
+  }).catch(function(e){showToast(GC_METHOD_LABEL[method]+' failed: '+e.message,'#D44000');});
 }
 function gcSaveAll(){
   var list=gc.photos.filter(function(p){return !p.saved;});

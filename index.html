@@ -284,7 +284,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
 <body>
 <div class="app">
 <div class="statusbar">
-  <span id="clock">9:41</span><span>PER Pasig v2.1.1</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
+  <span id="clock">9:41</span><span id="app-version">PER Pasig v2.1</span><span style="visibility:hidden" id="clock-spacer">00:00 AM</span>
 </div>
 
 <!-- ===== SPLASH SCREEN ===== -->
@@ -873,7 +873,7 @@ body{font-family:Arial,sans-serif;background:#061a40;display:flex;justify-conten
       <div class="ls-note">Enable Android's built-in Emergency Information so first responders can access your details from the lock screen.</div>
     </div>
     <div class="about-card">
-      <h3>App Features v2.1</h3>
+      <h3 id="app-features-ver">App Features v2.1</h3>
       <div class="features-list">
         <div class="feature-item"><span class="feature-check">✓</span><span>Pasig emergency hotlines by emergency type — tap, then press Call</span></div>
         <div class="feature-item"><span class="feature-check">✓</span><span>Backup call order — next number offered instantly if a line is busy</span></div>
@@ -2133,6 +2133,17 @@ function gcShowShareHelp(n,hasShare,hasCan){
   document.getElementById('gc-help').classList.add('show');
 }
 function gcHideShareHelp(){document.getElementById('gc-help').classList.remove('show');}
+
+// ---------- Show the real app version (installed Android app) ----------
+// The APK version comes from the GitHub build number (e.g. 2.1.5), so it never goes out of date.
+window.addEventListener('load',function(){
+  var m=gcMedia();if(!m)return;
+  m.getAppInfo().then(function(info){
+    if(!info||!info.version)return;
+    var sb=document.getElementById('app-version');if(sb)sb.textContent='PER Pasig v'+info.version;
+    var ab=document.getElementById('app-features-ver');if(ab)ab.textContent='App Features v'+info.version;
+  }).catch(function(){});
+});
 
 // ===== FAMILY EMERGENCY PLAN (feature 2) =====
 var familyMemberCount=0;

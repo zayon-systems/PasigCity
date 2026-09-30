@@ -1,0 +1,92 @@
+name: Build PER Pasig APK
+
+# One repo = website (GitHub Pages) + Android APK.
+# Runs by hand (Actions → Build PER Pasig APK → Run workflow) or when app files change.
+# Editing only contacts.json does NOT rebuild — installed apps fetch new numbers by themselves.
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths-ignore: ['contacts.json', '**.md']
+
+permissions:
+  contents: write   # to publish the APK under Releases
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      VERSION: 2.1.${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Bundle the web app into www/
+        run: |
+          rm -rf www && mkdir www
+          tar -c --exclude=./www --exclude=./android --exclude=./node_modules --exclude=./resources \
+            --exclude='./.git*' --exclude='./package*.json' --exclude=./capacitor.config.json --exclude='*.md' . | tar -x -C www
+          test -f www/index.html || { echo "::error::index.html not found at the top of the repo"; exit 1; }
+          OWNER="${GITHUB_REPOSITORY%%/*}"; REPO="${GITHUB_REPOSITORY##*/}"
+          BASE="https://$OWNER.github.io/$REPO/"
+          sed -i "s#</head>#<script>window.PER_REMOTE_BASE='$BASE';</script></head>#" www/index.html
+          echo "Numbers update from: ${BASE}contacts.json"
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Install Capacitor
+        run: npm ci
+
+      - name: App icon
+        continue-on-error: true
+        run: |
+          mkdir -p resources
+          if [ ! -f resources/icon-only.png ] && [ -f www/icons/icon-512.png ]; then cp www/icons/icon-512.png resources/icon-only.png; fi
+          if [ -f resources/icon-only.png ]; then
+            npx --yes @capacitor/assets@3 generate --android --iconBackgroundColor '#0B3D91' --iconBackgroundColorDark '#0B3D91'
+          fi
+
+      - name: Copy web app into Android project
+        run: npx cap sync android
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_B64: ${{ secrets.PER_KEYSTORE_BASE64 }}
+        run: |
+          if [ -z "$KEYSTORE_B64" ]; then
+            echo "::error::Signing key missing. Add the 4 PER_* secrets (Settings → Secrets and variables → Actions). A debug APK can't update installed apps, so the build stops here."
+            exit 1
+          fi
+          echo "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/per.jks"
+          echo "PER_KEYSTORE_PATH=$RUNNER_TEMP/per.jks" >> "$GITHUB_ENV"
+
+      - name: Build APK
+        working-directory: android
+        env:
+          PER_KEYSTORE_PASSWORD: ${{ secrets.PER_KEYSTORE_PASSWORD }}
+          PER_KEY_ALIAS: ${{ secrets.PER_KEY_ALIAS }}
+          PER_KEY_PASSWORD: ${{ secrets.PER_KEY_PASSWORD }}
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon
+          cp app/build/outputs/apk/release/app-release.apk "$GITHUB_WORKSPACE/PER-Pasig-v${VERSION}.apk"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: PER-Pasig-APK
+          path: PER-Pasig-v*.apk
+          retention-days: 30
+
+      - name: Publish as a Release (download straight to the phone)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "v${VERSION}" "PER-Pasig-v${VERSION}.apk" --title "PER Pasig v${VERSION}" \
+            --notes "Automatic build from ${GITHUB_SHA::7}" --latest

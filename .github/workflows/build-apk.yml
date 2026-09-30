@@ -16,10 +16,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 30
-    env:
-      VERSION: 2.1.${{ github.run_number }}
     steps:
       - uses: actions/checkout@v4
+
+      - name: Version number
+        # Continues the numbering from the old per-pasig-app repo (which reached 2.1.7).
+        run: echo "VERSION=2.1.$((GITHUB_RUN_NUMBER + 7))" >> "$GITHUB_ENV"
 
       - name: Bundle the web app into www/
         run: |

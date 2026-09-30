@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PER Pasig</string>
+    <string name="title_activity_main">PER Pasig</string>
+    <string name="package_name">com.zayonsystems.perpasig</string>
+    <string name="custom_url_scheme">com.zayonsystems.perpasig</string>
+</resources>

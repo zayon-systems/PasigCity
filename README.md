@@ -20,3 +20,9 @@ Add the official seal as `pasig-seal.png` (square, transparent PNG) in the repo 
 
 ## Developed by
 Zayon Systems — For the people of Pasig City
+
+## Android app (APK) — built from this same repo
+- **Actions → Build PER Pasig APK → Run workflow** builds a signed APK (5–8 min) and publishes it under **Releases**.
+- Needs 4 secrets in this repo (Settings → Secrets and variables → Actions): `PER_KEYSTORE_BASE64`, `PER_KEYSTORE_PASSWORD`, `PER_KEY_ALIAS`, `PER_KEY_PASSWORD` — same values as in `keystore-info.txt`.
+- Editing only `contacts.json` doesn't rebuild the APK: installed apps download the new numbers on their own.
+- Never upload the `.jks` key or `keystore-info.txt` here.

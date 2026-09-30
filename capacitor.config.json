@@ -1,0 +1,9 @@
+{
+  "appId": "com.zayonsystems.perpasig",
+  "appName": "PER Pasig",
+  "webDir": "www",
+  "android": {
+    "allowMixedContent": false,
+    "webContentsDebuggingEnabled": false
+  }
+}
